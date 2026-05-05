@@ -5,6 +5,7 @@ import Link from "next/link";
 import SeerLogo from "@/components/SeerLogo";
 
 import ExternalArrow from "@/assets/svg/external-arrow.svg";
+import Download from "@/assets/svg/download.svg";
 
 const AdvancedSection: React.FC = () => {
   return (
@@ -32,6 +33,20 @@ const AdvancedSection: React.FC = () => {
             className="text-klerosUIComponentsPrimaryBlue items-center text-sm"
           >
             Check it out <ExternalArrow className="ml-2 inline size-4" />
+          </Link>
+        </p>
+        <p className="text-klerosUIComponentsSecondaryText text-sm">
+          Download the latest data (updated in the last 24 hours) for the 9
+          properties in CSV format.&nbsp;
+          <Link
+            href={
+              "https://app.seer.pm/markets/100/which-movies-will-clement-watch-as-part-of-the-distilled-clements-judgement-expe-2"
+            }
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-klerosUIComponentsPrimaryBlue items-center text-sm"
+          >
+            here <Download className="ml-2 inline size-4" />
           </Link>
         </p>
       </div>

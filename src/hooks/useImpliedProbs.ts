@@ -1,5 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 
+function convolveBernoulli(dist: number[], p: number): number[] {
+  const next = Array(dist.length + 1).fill(0);
+  for (let k = 0; k < dist.length; k++) {
+    if (dist[k] === 0) continue;
+    next[k] += dist[k] * (1 - p);
+    next[k + 1] += dist[k] * p;
+  }
+  return next;
+}
+
+function convolve(a: number[], b: number[]): number[] {
+  const res = Array(a.length + b.length - 1).fill(0);
+  for (let i = 0; i < a.length; i++)
+    for (let j = 0; j < b.length; j++) res[i + j] += a[i] * b[j];
+  return res;
+}
+
+function buildPrefixSuffix(p: number[]) {
+  const n = p.length;
+  const prefix: number[][] = Array(n + 1);
+  const suffix: number[][] = Array(n + 1);
+  prefix[0] = [1];
+  for (let i = 0; i < n; i++)
+    prefix[i + 1] = convolveBernoulli(prefix[i], p[i]);
+  suffix[n] = [1];
+  for (let i = n - 1; i >= 0; i--)
+    suffix[i] = convolveBernoulli(suffix[i + 1], p[i]);
+  return { prefix, suffix };
+}
+
+export function computePrices(p: number[]) {
+  const n = p.length;
+  let priceY = 1;
+  for (const pi of p) priceY *= 1 - pi;
+  const { prefix, suffix } = buildPrefixSuffix(p);
+  const prices = Array(n).fill(0);
+  for (let i = 0; i < n; i++) {
+    const dist = convolve(prefix[i], suffix[i + 1]);
+    let expectation = 0;
+    for (let k = 0; k < dist.length; k++)
+      expectation += dist[k] * (1 / (1 + k));
+    prices[i] = p[i] * expectation;
+  }
+  return { priceY, prices };
+}
+
+// ─── Worker blob ──────────────────────────────────────────────────────────────
+// The solver runs entirely off the main thread so the UI never freezes.
+
 const WORKER_SRC = `
 function convolveBernoulli(dist, p) {
   const next = Array(dist.length + 1).fill(0);
@@ -290,13 +339,15 @@ function makeWorker() {
   return new Worker(URL.createObjectURL(blob));
 }
 
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
 type SolverState =
   | { status: "idle" }
   | { status: "running"; progress: number; loss: number }
   | { status: "done"; probs: number[]; priceY: number; prices: number[] }
   | { status: "error"; message: string };
 
-function useImpliedProbsAsync(
+export function useImpliedProbsAsync(
   targetY: number,
   targetPrices: number[],
   enabled: boolean,
@@ -354,4 +405,60 @@ function useImpliedProbsAsync(
   }, [key, enabled]);
 
   return state;
+}
+
+export function solveProbsAsync(
+  targetY: number,
+  targetPrices: number[],
+  opts?: {
+    lr?: number;
+    iters?: number;
+    onProgress?: (progress: {
+      iter: number;
+      iters: number;
+      progress: number;
+      loss: number;
+    }) => void;
+  },
+): Promise<{
+  probs: number[];
+  priceY: number;
+  prices: number[];
+}> {
+  return new Promise((resolve, reject) => {
+    const worker = makeWorker();
+
+    worker.onmessage = (e) => {
+      const msg = e.data;
+
+      if (msg.type === "progress") {
+        opts?.onProgress?.({
+          iter: msg.iter,
+          iters: msg.iters,
+          progress: msg.iter / msg.iters,
+          loss: msg.loss,
+        });
+      } else if (msg.type === "done") {
+        worker.terminate();
+
+        resolve({
+          probs: msg.probs,
+          priceY: msg.priceY,
+          prices: msg.prices,
+        });
+      }
+    };
+
+    worker.onerror = (e) => {
+      worker.terminate();
+      reject(new Error(e.message));
+    };
+
+    worker.postMessage({
+      targetY,
+      targetPrices,
+      lr: opts?.lr ?? 0.01,
+      iters: opts?.iters ?? 100,
+    });
+  });
 }

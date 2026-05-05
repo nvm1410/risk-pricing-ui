@@ -18,12 +18,11 @@ const ParticipateSection: React.FC = () => {
         <p className="text-klerosUIComponentsSecondaryText text-sm">
           {/* NOTE: project specific */}
           <strong className="text-klerosUIComponentsPrimaryText text-base">
-            Set estimates for the movies below.
+            Set estimates for the protocols below
           </strong>{" "}
           <br />
-          You can choose how many movies you want to predict. <br />
-          Note that the same capital can be used to predict on all movies at
-          once.
+          You can choose how many protocols you want to predict. Note that the
+          same capital can be used to predict on all protocols at once.
         </p>
       </Card>
       <CsvUpload />
