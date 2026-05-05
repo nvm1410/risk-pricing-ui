@@ -25,9 +25,16 @@ import PositionValue from "./PositionValue";
 import PredictionSlider from "./PredictionSlider";
 import { RiskPricingOutcome } from "@/hooks/useMarketData";
 import { useRiskTokenPositionValue } from "@/hooks/useRiskTokenPositionValue";
-import { assetColors } from "./constants";
+import { assetColors, riskPositionExplainLink } from "./constants";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
-const RiskPricing = ({ outcome }: { outcome: RiskPricingOutcome }) => {
+const RiskPricing = ({
+  outcome,
+  isNoToAll,
+}: {
+  outcome: RiskPricingOutcome;
+  isNoToAll: boolean;
+}) => {
   const {
     outcome: outcomeName,
     collateral,
@@ -37,7 +44,9 @@ const RiskPricing = ({ outcome }: { outcome: RiskPricingOutcome }) => {
     outcomeIndex,
     symbol,
   } = outcome;
-  const isSelected = false;
+  const predictions = useRiskPredictionStore((state) => state.riskPredictions);
+  const isSelected =
+    predictions[outcomeId] && predictions[outcomeId] !== probability;
   const { tradeExecutor } = useTradeWallet();
 
   const { value } = useRiskTokenPositionValue(
@@ -84,7 +93,7 @@ const RiskPricing = ({ outcome }: { outcome: RiskPricingOutcome }) => {
                         className="px-2 py-2 [&_small]:text-xs"
                       >
                         <Link
-                          href={positionExplainerLink}
+                          href={riskPositionExplainLink}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={clsx(
@@ -114,7 +123,9 @@ const RiskPricing = ({ outcome }: { outcome: RiskPricingOutcome }) => {
           ),
           body: (
             <div className="flex w-full flex-col">
-              <div className="pt-8 pb-4">{/* <PredictionSlider /> */}</div>
+              <div className="pt-8 pb-4">
+                <PredictionSlider outcome={outcome} isNoToAll={isNoToAll} />
+              </div>
               {tradeExecutor ? (
                 <div className="flex w-full items-center justify-between gap-2">
                   <PositionValue

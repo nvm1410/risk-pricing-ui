@@ -8,6 +8,7 @@ import { solveProbsAsync, useImpliedProbsAsync } from "./useImpliedProbs";
 import { Address } from "viem";
 import { collateral } from "@/consts";
 import { useTokensInfo } from "./useTokensInfo";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 export function deserializeMarket(market: SerializedMarket): Market {
   const result = {
@@ -62,7 +63,7 @@ export interface RiskPricingOutcome {
   price: number;
   probability: number;
   outcomeIndex: number;
-  symbol: string
+  symbol: string;
 }
 export const useMarketData = () => {
   const queryResult = useQuery<{
@@ -108,6 +109,8 @@ export const useMarketData = () => {
         };
       })
     : undefined;
+  const setOutcomes = useRiskPredictionStore((state) => state.setOutcomes);
+  setOutcomes(outcomes ?? []);
   if (!outcomes) return queryResult;
   return { ...queryResult, data: { ...queryResult.data, outcomes } };
 };

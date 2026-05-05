@@ -87,6 +87,76 @@ export const parseMarketCSV = (csvText: string): Record<string, number> => {
   return result;
 };
 
+export const parseRiskCSV = (csvText: string): Record<string, number> => {
+  const parsed = Papa.parse<{ asset: string; probability: string }>(csvText, {
+    header: true,
+    skipEmptyLines: true,
+  });
+
+  if (parsed.errors.length > 0) {
+    const firstError = parsed.errors[0];
+    throw new Error(
+      `CSV parse error${firstError.row != null ? ` at row ${firstError.row + 1}` : ""}: ${firstError.message}`,
+    );
+  }
+
+  const rows = parsed.data;
+  const fields = parsed.meta.fields;
+
+  if (rows.length === 0) {
+    throw new Error("CSV must have at least a header row and one data row");
+  }
+
+  // Check for required columns (matches original strict validation)
+  if (!fields || fields.length !== 2) {
+    throw new Error("CSV must have exactly 2 columns: asset, probability");
+  }
+
+  if (!fields.includes("asset") || !fields.includes("probability")) {
+    throw new Error("CSV must have columns: asset, probability");
+  }
+
+  const result: Record<string, number> = {};
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row) continue;
+
+    const asset = String(row.asset ?? "").trim();
+    const probabilityStr = String(row.probability ?? "").trim();
+
+    if (!asset || !probabilityStr) {
+      throw new Error(`Row ${i + 2}: All columns must have values`);
+    }
+    // Validate probability
+    const probability = parseFloat(probabilityStr);
+    if (isNaN(probability)) {
+      throw new Error(
+        `Row ${i + 2}: Probability "${probabilityStr}" is not a valid number`,
+      );
+    }
+
+    if (probability < 0) {
+      throw new Error(`Row ${i + 2}: Probability cannot be negative`);
+    }
+
+    const maxProbability = 1;
+    if (probability > maxProbability) {
+      throw new Error(
+        `Row ${i + 2}: Probability cannot be greater than the max value of ${maxProbability}`,
+      );
+    }
+
+    result[asset] = probability;
+  }
+
+  if (Object.values(result).length === 0) {
+    throw new Error("CSV contains no valid data rows");
+  }
+
+  return result;
+};
+
 export function generateMarketCsv(markets: Record<string, PredictionMarket>) {
   const data = Object.values(markets).map((market) => ({
     marketName: market.name,

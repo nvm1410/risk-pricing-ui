@@ -1,49 +1,15 @@
 import { useState } from "react";
-import { assetColors } from "../constants";
+import { assetColors, zones } from "../constants";
 
 type AssetRisk = {
   symbol: string;
   risk: number;
 };
 
-type Zone = {
-  label: string;
-  emoji: string;
-  from: number;
-  to: number;
-};
-
 type MarketEstimateRiskProps = {
   assets: AssetRisk[];
   maxRisk?: number;
 };
-
-const zones: Zone[] = [
-  {
-    label: "SAFE",
-    emoji: "😊",
-    from: 0,
-    to: 3,
-  },
-  {
-    label: "CAUTION",
-    emoji: "🙄",
-    from: 3,
-    to: 5,
-  },
-  {
-    label: "WARNING",
-    emoji: "😬",
-    from: 5,
-    to: 10,
-  },
-  {
-    label: "DANGER",
-    emoji: "😱",
-    from: 10,
-    to: 20,
-  },
-];
 
 export default function MarketEstimateRisk({
   assets,
@@ -134,14 +100,7 @@ export default function MarketEstimateRisk({
                     const start = (zone.from / asset.risk) * 100;
                     const end = (clampedTo / asset.risk) * 100;
 
-                    const colors = [
-                      ["#bbf7d0", "#dcfce7"],
-                      ["#fef9c3", "#fed7aa"],
-                      ["#fbcfe8", "#f9a8d4"],
-                      ["#f9a8d4", "#fb7185"],
-                    ];
-
-                    const [from, to] = colors[index];
+                    const [from, to] = zone.colors;
 
                     return [`${from} ${start}%`, `${to} ${end}%`];
                   })
