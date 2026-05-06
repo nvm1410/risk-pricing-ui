@@ -1,44 +1,43 @@
 "use client";
 
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 
 import { Button } from "@kleros/ui-components-library";
 import clsx from "clsx";
 import { useLocalStorage, useToggle } from "react-use";
 
-import { useReadGnosisRouterGetWinningOutcomes } from "@/generated";
-import { useMarketsStore } from "@/store/markets";
-
-import MarketContextProvider from "@/context/MarketContext";
 import { TradeWalletProvider } from "@/context/TradeWalletContext";
-import { useChartData } from "@/hooks/useChartData";
-import { usePredictionMarkets } from "@/hooks/usePredictionMarkets";
 
 import FirstVisitGuide from "@/components/Guides/FirstVisit";
 import Loader from "@/components/Loader";
 
 import { isUndefined } from "@/utils";
 
-import { markets, parentConditionId } from "@/consts/markets";
-
+import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
+import { useMarketData } from "@/hooks/useMarketData";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 import AdvancedSection from "./components/AdvancedSection";
-import Chart from "./components/Chart";
 import Header from "./components/Header";
 import ParticipateSection from "./components/ParticipateSection";
 import ExportPredictions from "./components/ParticipateSection/CsvUpload/ExportPredictions";
 import PredictAll from "./components/PredictAll";
-import ProjectFunding from "./components/ProjectFunding";
+import RiskPricing from "./components/RiskPricing";
+import MarketEstimateRisk from "./components/RiskPricing/MarketEstimateRisk";
 
 export default function Home() {
-  const { data: chartData } = useChartData(markets);
-  const predictionMarkets = usePredictionMarkets();
-  const resetPredictionMarkets = useMarketsStore(
-    (state) => state.resetPredictionMarkets,
+  const { data, isLoading } = useMarketData();
+  const predictions = useRiskPredictionStore((state) => state.riskPredictions);
+  const resetRiskPredictions = useRiskPredictionStore(
+    (state) => state.resetRiskPredictions,
   );
-
-  const { data: winningOutcomes } = useReadGnosisRouterGetWinningOutcomes({
-    args: [parentConditionId],
-  });
+  const hasPredictions = Object.entries(predictions).some(
+    ([predictionOutcomeId, prediction]) => {
+      const marketProbability = data?.outcomes?.find(
+        (outcome) => outcome.outcomeId === predictionOutcomeId,
+      )?.probability;
+      return prediction && prediction !== marketProbability;
+    },
+  );
 
   const [isOpen, toggleGuide] = useToggle(false);
   const [isOnboardingDone, setOnboardingDone] = useLocalStorage<boolean>(
@@ -51,14 +50,24 @@ export default function Home() {
       toggleGuide(true);
     }
   }, [isOnboardingDone, toggleGuide]);
-
   return (
     <div className="w-full px-4 py-12 md:px-8 lg:px-32">
-      <div className="mx-auto max-w-294">
+      <div className="mx-auto max-w-294 space-y-6">
         <Header />
-        <div className="min-h-106">
-          {!isUndefined(chartData) ? (
-            <Chart data={chartData} />
+        <div className="min-h-106 space-y-6">
+          {!isLoading ? (
+            <>
+              {data?.outcomes ? (
+                <MarketEstimateRisk
+                  assets={data.outcomes.slice(0, -2).map((outcome) => {
+                    return {
+                      symbol: outcome.outcome,
+                      risk: Number((outcome.probability * 100).toFixed(3)),
+                    };
+                  })}
+                />
+              ) : null}
+            </>
           ) : (
             <div className="flex h-96 w-full items-center justify-center">
               <Loader />
@@ -70,17 +79,23 @@ export default function Home() {
           <TradeWalletProvider>
             <ParticipateSection />
             <div className="flex flex-col gap-4">
-              {markets.map((market, i) => (
-                <MarketContextProvider
-                  key={market.marketId}
-                  selected={winningOutcomes?.at(i)}
-                  {...market}
-                >
-                  <ProjectFunding key={market.marketId} />
-                </MarketContextProvider>
-              ))}
+              {data?.outcomes
+                ? data.outcomes.map((outcome) => {
+                    if (isTwoStringsEqual(outcome.outcome, "invalid"))
+                      return null;
+                    return (
+                      <RiskPricing
+                        key={outcome.outcomeId}
+                        outcome={outcome}
+                        isNoToAll={
+                          outcome.outcomeIndex === data!.outcomes!.length - 2
+                        }
+                      />
+                    );
+                  })
+                : null}
             </div>
-            {predictionMarkets.length > 0 ? (
+            {hasPredictions ? (
               <div
                 className={clsx(
                   "flex w-full flex-wrap justify-between gap-4",
@@ -91,12 +106,12 @@ export default function Home() {
                   variant="secondary"
                   small
                   text="Reset Predictions"
-                  onPress={resetPredictionMarkets}
+                  onPress={resetRiskPredictions}
                 />
                 <ExportPredictions />
               </div>
             ) : null}
-            <PredictAll />
+            <PredictAll enabled={hasPredictions} />
           </TradeWalletProvider>
 
           <AdvancedSection />

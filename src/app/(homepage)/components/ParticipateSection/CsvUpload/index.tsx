@@ -7,9 +7,11 @@ import { useToggle } from "react-use";
 import { useMarketsStore } from "@/store/markets";
 
 import { isUndefined } from "@/utils";
-import { parseMarketCSV } from "@/utils/csv";
+import { parseMarketCSV, parseRiskCSV } from "@/utils/csv";
 
 import CsvDownload from "./CsvDownload";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
 
 interface ICsvUploadPopup {
   isOpen: boolean;
@@ -22,24 +24,32 @@ const CsvUploadPopup: React.FC<ICsvUploadPopup> = ({
 }) => {
   const [file, setFile] = useState<File>();
   const [parseError, setParseError] = useState<string>();
-  const setPrediction = useMarketsStore.getState().setPrediction;
+  const setRiskPredictions = useRiskPredictionStore(
+    (state) => state.setRiskPredictions,
+  );
+  const outcomes = useRiskPredictionStore((state) => state.outcomes);
 
   const handleLoad = useCallback(async () => {
     try {
       if (isUndefined(file)) return;
 
       const csvText = await file.text();
-      const records = parseMarketCSV(csvText);
-
-      Object.entries(records).forEach(([marketId, score]) => {
-        setPrediction(marketId, score);
+      const records = parseRiskCSV(csvText);
+      const predictions: { [key: string]: number } = {};
+      Object.entries(records).map(([asset, probability]) => {
+        const outcomeId = outcomes.find((outcome) =>
+          isTwoStringsEqual(outcome.outcome, asset),
+        )?.outcomeId;
+        if (outcomeId) {
+          predictions[outcomeId] = probability;
+        }
       });
-
+      setRiskPredictions(predictions);
       toggleIsOpen();
     } catch (err) {
       if (err instanceof Error) setParseError(err.message);
     }
-  }, [file, setPrediction, toggleIsOpen]);
+  }, [file]);
 
   return (
     <Modal
@@ -67,20 +77,20 @@ const CsvUploadPopup: React.FC<ICsvUploadPopup> = ({
             )}
           >
             <span className="text-klerosUIComponentsSecondaryText text-sm">
-              marketName,score
+              asset,probability
             </span>
             <span className="text-klerosUIComponentsPrimaryText text-sm">
-              Judge Dredd (1995),49.45
+              LBTC,55%
             </span>
             <span className="text-klerosUIComponentsPrimaryText text-sm">
-              Bacurau (2019),53.52
+              USDF,30%
             </span>
             <span className="text-klerosUIComponentsSecondaryText text-sm">
               ...
             </span>
           </div>
           <span className="text-klerosUIComponentsPrimaryText text-sm">
-            Each row represents a prediction for a movie&apos;s score in the
+            Each row represents a prediction for a protocol's score in the
             Gnosis ecosystem.
           </span>
         </div>

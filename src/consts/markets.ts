@@ -56,10 +56,13 @@ export interface IMarket {
 }
 
 export const marketMetadata = {
-  name: "Session 1 - Movies Experiment",
+  name: "Risk Pricing Predictions",
   question:
-    "If watched, what percentile score would Clément give to the movie?",
+    "What is the probability of the following protocols being exploited >$10M before 2027?",
 };
+
+export const RISK_PRICING_MARKET_ID =
+  "0xAE4DaD070f9c029718E8BC4Ba1E2d3eb0A0c5d6b";
 
 export const markets: Array<IMarket> = [
   {

@@ -9,13 +9,28 @@ import LightButton from "@/components/LightButton";
 import DownloadIcon from "@/assets/svg/download.svg";
 
 import { downloadCsvFile, generateMarketCsv } from "@/utils/csv";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+import Papa from "papaparse";
 
 const CsvDownload: React.FC = () => {
-  const markets = useMarketsStore((state) => state.markets);
-  const handleDownload = useCallback(() => {
-    const csv = generateMarketCsv(markets);
-    downloadCsvFile("market-predictions.csv", csv);
-  }, [markets]);
+  const outcomes = useRiskPredictionStore((state) => state.outcomes);
+  const predictions = useRiskPredictionStore((state) => state.riskPredictions);
+  const handleDownload = () => {
+    const data = outcomes.slice(0, -1).map((outcome) => {
+      return {
+        asset: outcome.outcome,
+        probability: predictions[outcome.outcomeId] ?? outcome.probability,
+      };
+    });
+
+    const csv = Papa.unparse(data, {
+      columns: ["asset", "probability"],
+    });
+    downloadCsvFile(
+      `risk-pricing-predictions-${new Date().toUTCString()}.csv`,
+      csv,
+    );
+  };
 
   return (
     <LightButton

@@ -27,7 +27,8 @@ import { isUndefined } from "@/utils";
 import { collateral } from "@/consts";
 import { TokenType } from "@/consts/tokens";
 
-import Header from "./Header";
+import RiskMarketHeader from "./RiskMarketHeader";
+import { usePredictRiskFlow } from "@/hooks/predict/usePredictRiskFlow";
 interface IPredictAllPopup {
   isOpen: boolean;
   toggleIsOpen: () => void;
@@ -218,7 +219,7 @@ export const PredictAllPopup: React.FC<IPredictAllPopup> = ({
     frozenToBeAdded,
     frozenToBeAddedSeerCredits,
     tradeExecutorPredictAll,
-  } = usePredictAllFlow({
+  } = usePredictRiskFlow({
     account,
     tradeExecutor,
     checkTradeExecutorResult,
@@ -256,7 +257,7 @@ export const PredictAllPopup: React.FC<IPredictAllPopup> = ({
       {...{ isOpen }}
     >
       <div className="flex flex-col items-center">
-        <Header />
+        <RiskMarketHeader />
         <ScrollFade className="min-h-32 w-full">
           <PredictAmountSection
             {...{

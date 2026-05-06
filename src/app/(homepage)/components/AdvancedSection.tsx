@@ -5,8 +5,30 @@ import Link from "next/link";
 import SeerLogo from "@/components/SeerLogo";
 
 import ExternalArrow from "@/assets/svg/external-arrow.svg";
+import Download from "@/assets/svg/download.svg";
+import { RISK_PRICING_MARKET_ID } from "@/consts/markets";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+import Papa from "papaparse";
+import { downloadCsvFile } from "@/utils/csv";
 
 const AdvancedSection: React.FC = () => {
+  const outcomes = useRiskPredictionStore((state) => state.outcomes);
+  const handleDownload = () => {
+    const data = outcomes.slice(0, -1).map((outcome) => {
+      return {
+        asset: outcome.outcome,
+        probability: outcome.probability,
+      };
+    });
+
+    const csv = Papa.unparse(data, {
+      columns: ["asset", "probability"],
+    });
+    downloadCsvFile(
+      `risk-pricing-predictions-${new Date().toUTCString()}.csv`,
+      csv,
+    );
+  };
   return (
     <Card
       round
@@ -24,15 +46,23 @@ const AdvancedSection: React.FC = () => {
           Check the opportunities if you want to LP or Trade specific outcome
           tokens in Seer.&nbsp;
           <Link
-            href={
-              "https://app.seer.pm/markets/100/which-movies-will-clement-watch-as-part-of-the-distilled-clements-judgement-expe-2"
-            }
+            href={`https://app.seer.pm/markets/100/${RISK_PRICING_MARKET_ID}`}
             target="_blank"
             rel="noreferrer noopener"
             className="text-klerosUIComponentsPrimaryBlue items-center text-sm"
           >
-            Check it out <ExternalArrow className="ml-2 inline size-4" />
+            Check it out <ExternalArrow className="ml-1 inline size-4" />
           </Link>
+        </p>
+        <p className="text-klerosUIComponentsSecondaryText text-sm">
+          Download the latest data (updated in the last 24 hours) in CSV
+          format.&nbsp;
+          <button
+            onClick={handleDownload}
+            className="text-klerosUIComponentsPrimaryBlue cursor-pointer items-center text-sm"
+          >
+            here <Download className="ml-1 inline size-4" />
+          </button>
         </p>
       </div>
       <SeerLogo className="shrink-0" />

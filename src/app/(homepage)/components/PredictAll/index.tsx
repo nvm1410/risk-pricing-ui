@@ -11,7 +11,7 @@ import CheckOutline from "@/assets/svg/check-outline-button.svg";
 
 import { PredictAllPopup } from "./PredictAllPopup";
 
-const PredictAll: React.FC = () => {
+const PredictAll = ({ enabled }: { enabled: boolean }) => {
   const [isOpen, toggleIsOpen] = useToggle(false);
   const markets = usePredictionMarkets();
   const [isGuideOpen, toggleGuide] = useToggle(false);
@@ -42,7 +42,7 @@ const PredictAll: React.FC = () => {
           }
           text="Predict Selected"
           onPress={toggleIsOpen}
-          isDisabled={markets.length === 0}
+          isDisabled={!enabled}
         />
         {isOpen ? (
           <PredictAllPopup {...{ isOpen, toggleIsOpen, toggleGuide }} />

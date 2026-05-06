@@ -1,22 +1,30 @@
-import { useCallback } from "react";
-
 import clsx from "clsx";
-
-import { useMarketsStore } from "@/store/markets";
-
 import LightButton from "@/components/LightButton";
-
 import DownloadIcon from "@/assets/svg/download.svg";
+import { RiskPricingOutcome } from "@/hooks/useMarketData";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+import { downloadCsvFile } from "@/utils/csv";
+import Papa from "papaparse";
 
-import { downloadCsvFile, generateMarketCsv } from "@/utils/csv";
+const ExportPredictions = ({}) => {
+  const outcomes = useRiskPredictionStore((state) => state.outcomes);
+  const predictions = useRiskPredictionStore((state) => state.riskPredictions);
+  const handleExport = () => {
+    const data = outcomes.slice(0, -1).map((outcome) => {
+      return {
+        asset: outcome.outcome,
+        probability: predictions[outcome.outcomeId] ?? outcome.probability,
+      };
+    });
 
-const ExportPredictions: React.FC = () => {
-  const markets = useMarketsStore((state) => state.markets);
-
-  const handleExport = useCallback(() => {
-    const csv = generateMarketCsv(markets);
-    downloadCsvFile(`market-predictions-${new Date().toUTCString()}.csv`, csv);
-  }, [markets]);
+    const csv = Papa.unparse(data, {
+      columns: ["asset", "probability"],
+    });
+    downloadCsvFile(
+      `risk-pricing-predictions-${new Date().toUTCString()}.csv`,
+      csv,
+    );
+  };
 
   return (
     <LightButton
