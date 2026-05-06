@@ -1,10 +1,12 @@
-import { SupportedChain } from "@/types/market-types";
-import { isUndefined } from "@/utils";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Address, Client, erc20Abi } from "viem";
 import { multicall } from "viem/actions";
 import { gnosis } from "viem/chains";
 import { useClient } from "wagmi";
+
+import { SupportedChain } from "@/types/market-types";
+
+import { isUndefined } from "@/utils";
 
 export interface GetTokenResult {
   address: Address;

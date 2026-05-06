@@ -5,15 +5,16 @@ import clsx from "clsx";
 import dynamic from "next/dynamic";
 import { useSize } from "react-use";
 
-import { Skeleton } from "@/components/Skeleton";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 import { RiskPricingOutcome } from "@/hooks/useMarketData";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
-import { formatWithPrecision } from "@/utils";
+
+import { Skeleton } from "@/components/Skeleton";
+
 import { getReadableTextColor } from "@/utils/getReadableTextColor";
+
 import { zones } from "./constants";
 import { interpolateColor } from "./utils";
-import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
 
 const LoadingSkeleton: React.FC = () => (
   <div className="relative w-full">

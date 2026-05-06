@@ -1,10 +1,13 @@
 import clsx from "clsx";
-import LightButton from "@/components/LightButton";
-import DownloadIcon from "@/assets/svg/download.svg";
-import { RiskPricingOutcome } from "@/hooks/useMarketData";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
-import { downloadCsvFile } from "@/utils/csv";
 import Papa from "papaparse";
+
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+
+import LightButton from "@/components/LightButton";
+
+import DownloadIcon from "@/assets/svg/download.svg";
+
+import { downloadCsvFile } from "@/utils/csv";
 
 const ExportPredictions = ({}) => {
   const outcomes = useRiskPredictionStore((state) => state.outcomes);

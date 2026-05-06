@@ -1,14 +1,17 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { gnosis } from "viem/chains";
-import { RISK_PRICING_MARKET_ID } from "@/consts/markets";
-import { Market, PoolHourData, SerializedMarket } from "@/types/market-types";
-import { isTwoStringsEqual } from "./liquidity/utils";
-import { solveProbsAsync, useImpliedProbsAsync } from "./useImpliedProbs";
 import { Address } from "viem";
-import { collateral } from "@/consts";
-import { useTokensInfo } from "./useTokensInfo";
+import { gnosis } from "viem/chains";
+
 import { useRiskPredictionStore } from "@/store/riskMarketStore";
+import { Market, PoolHourData, SerializedMarket } from "@/types/market-types";
+
+import { RISK_PRICING_MARKET_ID } from "@/consts/markets";
+
+import { isTwoStringsEqual } from "./liquidity/utils";
+
+import { useImpliedProbsAsync } from "./useImpliedProbs";
+import { useTokensInfo } from "./useTokensInfo";
 
 export function deserializeMarket(market: SerializedMarket): Market {
   const result = {

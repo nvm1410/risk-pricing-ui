@@ -6,16 +6,17 @@ import { Button } from "@kleros/ui-components-library";
 import clsx from "clsx";
 import { useLocalStorage, useToggle } from "react-use";
 
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+
 import { TradeWalletProvider } from "@/context/TradeWalletContext";
+import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
+import { useMarketData } from "@/hooks/useMarketData";
 
 import FirstVisitGuide from "@/components/Guides/FirstVisit";
 import Loader from "@/components/Loader";
 
 import { isUndefined } from "@/utils";
 
-import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
-import { useMarketData } from "@/hooks/useMarketData";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
 import AdvancedSection from "./components/AdvancedSection";
 import Header from "./components/Header";
 import ParticipateSection from "./components/ParticipateSection";

@@ -14,6 +14,7 @@ import {
   wxdaiAbi,
   wxdaiAddress,
 } from "@/generated";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 import { config } from "@/wagmiConfig";
 
 import { isUndefined } from "@/utils";
@@ -23,11 +24,11 @@ import { getMinimumAmountOut } from "@/utils/swapr";
 import { waitForTransaction } from "@/utils/waitForTransaction";
 
 import { collateral, DECIMALS, DEFAULT_CHAIN } from "@/consts";
-import { IMarket, RISK_PRICING_MARKET_ID } from "@/consts/markets";
+import { RISK_PRICING_MARKET_ID } from "@/consts/markets";
 
-import { mergeFromRouter, splitFromRouter } from "./useTradeExecutorPredict";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
 import { RiskPricingOutcome } from "../useMarketData";
+
+import { mergeFromRouter } from "./useTradeExecutorPredict";
 
 interface PredictProps {
   tradeExecutor: Address;
@@ -344,7 +345,7 @@ export const useTradeExecutorPredictRiskOutcomes = (
   return useMutation({
     mutationFn: (props: PredictProps) =>
       predictRiskOutcomesFromTradeExecutor({ ...props, outcomes }),
-    onSuccess(_data, variables) {
+    onSuccess() {
       onSuccess?.();
       setTimeout(() => {
         queryClient.refetchQueries({ queryKey: ["useTokenBalance"] });

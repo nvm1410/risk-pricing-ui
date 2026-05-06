@@ -4,14 +4,14 @@ import { Button, FileUploader, Modal } from "@kleros/ui-components-library";
 import clsx from "clsx";
 import { useToggle } from "react-use";
 
-import { useMarketsStore } from "@/store/markets";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+
+import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
 
 import { isUndefined } from "@/utils";
-import { parseMarketCSV, parseRiskCSV } from "@/utils/csv";
+import { parseRiskCSV } from "@/utils/csv";
 
 import CsvDownload from "./CsvDownload";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
-import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
 
 interface ICsvUploadPopup {
   isOpen: boolean;
@@ -90,8 +90,9 @@ const CsvUploadPopup: React.FC<ICsvUploadPopup> = ({
             </span>
           </div>
           <span className="text-klerosUIComponentsPrimaryText text-sm">
-            Each row represents a prediction for a protocol's score in the
-            Gnosis ecosystem.
+            {
+              "Each row represents a prediction for a protocol's score in the Gnosis ecosystem."
+            }
           </span>
         </div>
         <CsvDownload />

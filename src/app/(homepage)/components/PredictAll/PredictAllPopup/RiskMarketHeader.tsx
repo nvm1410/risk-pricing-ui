@@ -3,19 +3,17 @@ import React from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { useMarketsStore } from "@/store/markets";
-
-import { usePredictionMarkets } from "@/hooks/usePredictionMarkets";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 import LightButton from "@/components/LightButton";
+import { ScrollFade } from "@/components/ScrollFade";
 
 import CloseIcon from "@/assets/svg/close-icon.svg";
 import ArrowDown from "@/assets/svg/long-arrow-down.svg";
 import ArrowUp from "@/assets/svg/long-arrow-up.svg";
 
-import { formatWithPrecision, isUndefined } from "@/utils";
-import { ScrollFade } from "@/components/ScrollFade";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
+import { isUndefined } from "@/utils";
+
 import { assetColors } from "../../RiskPricing/constants";
 
 const RiskMarketHeader: React.FC = () => {

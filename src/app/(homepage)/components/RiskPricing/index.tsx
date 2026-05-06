@@ -1,5 +1,3 @@
-import React from "react";
-
 import {
   Accordion,
   CustomAccordion,
@@ -8,25 +6,20 @@ import {
 import clsx from "clsx";
 import Link from "next/link";
 
-import { useMarketsStore } from "@/store/markets";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
-import { useMarketContext } from "@/context/MarketContext";
 import { useTradeWallet } from "@/context/TradeWalletContext";
-import { useTokenPositionValue } from "@/hooks/useTokenPositionValue";
+import { RiskPricingOutcome } from "@/hooks/useMarketData";
+import { useRiskTokenPositionValue } from "@/hooks/useRiskTokenPositionValue";
 
 import CheckOutline from "@/assets/svg/check-outline-button.svg";
 import InfoIcon from "@/assets/svg/info.svg";
 import MinusOutline from "@/assets/svg/minus-outline.svg";
 
-import { positionExplainerLink } from "@/consts/markets";
-
+import { assetColors, riskPositionExplainLink } from "./constants";
 import Details from "./Details";
 import PositionValue from "./PositionValue";
 import PredictionSlider from "./PredictionSlider";
-import { RiskPricingOutcome } from "@/hooks/useMarketData";
-import { useRiskTokenPositionValue } from "@/hooks/useRiskTokenPositionValue";
-import { assetColors, riskPositionExplainLink } from "./constants";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 const RiskPricing = ({
   outcome,
@@ -42,7 +35,6 @@ const RiskPricing = ({
     probability,
     outcomeId,
     outcomeIndex,
-    symbol,
   } = outcome;
   const predictions = useRiskPredictionStore((state) => state.riskPredictions);
   const isSelected =

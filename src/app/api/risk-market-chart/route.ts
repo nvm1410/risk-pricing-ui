@@ -1,9 +1,9 @@
 export const revalidate = 300;
 
 import { NextResponse } from "next/server";
+import { gnosis } from "viem/chains";
 
 import { RISK_PRICING_MARKET_ID } from "@/consts/markets";
-import { gnosis } from "viem/chains";
 
 export async function OPTIONS() {
   return new NextResponse(null, {

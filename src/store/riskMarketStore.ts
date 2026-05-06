@@ -1,5 +1,6 @@
-import { RiskPricingOutcome } from "@/hooks/useMarketData";
 import { create } from "zustand";
+
+import { RiskPricingOutcome } from "@/hooks/useMarketData";
 
 type Predictions = Record<string, number>;
 

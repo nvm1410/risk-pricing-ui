@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { assetColors, zones } from "../constants";
 
 type AssetRisk = {
@@ -89,7 +90,7 @@ export default function MarketEstimateRisk({
               .map((asset, index) => {
                 const assetColor = assetColors[index % assetColors.length];
                 const gradientStops = zones
-                  .flatMap((zone, index) => {
+                  .flatMap((zone) => {
                     // Skip zones completely outside asset risk
                     if (zone.from >= asset.risk) return [];
 

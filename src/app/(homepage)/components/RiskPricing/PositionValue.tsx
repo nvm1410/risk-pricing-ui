@@ -5,14 +5,15 @@ import clsx from "clsx";
 import Link from "next/link";
 import { Address } from "viem";
 
+import { RiskPricingOutcome } from "@/hooks/useMarketData";
+import { useRiskTokenPositionValue } from "@/hooks/useRiskTokenPositionValue";
+
 import InfoIcon from "@/assets/svg/info.svg";
 
 import { formatValue, isUndefined } from "@/utils";
 
-import { useRiskTokenPositionValue } from "@/hooks/useRiskTokenPositionValue";
 import { riskPositionExplainLink } from "./constants";
 import RedeemButton from "./RedeemButton";
-import { RiskPricingOutcome } from "@/hooks/useMarketData";
 
 interface IPositionValue {
   outcome: RiskPricingOutcome;

@@ -1,16 +1,13 @@
-import { useCallback } from "react";
-
 import clsx from "clsx";
+import Papa from "papaparse";
 
-import { useMarketsStore } from "@/store/markets";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 import LightButton from "@/components/LightButton";
 
 import DownloadIcon from "@/assets/svg/download.svg";
 
-import { downloadCsvFile, generateMarketCsv } from "@/utils/csv";
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
-import Papa from "papaparse";
+import { downloadCsvFile } from "@/utils/csv";
 
 const CsvDownload: React.FC = () => {
   const outcomes = useRiskPredictionStore((state) => state.outcomes);

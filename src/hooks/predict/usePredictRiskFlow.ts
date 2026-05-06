@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Address } from "viem";
 
 import { foresightCreditsAddress } from "@/generated";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 import { useCreateTradeExecutor } from "@/hooks/tradeWallet/useCreateTradeExecutor";
 import { useDepositToTradeExecutor } from "@/hooks/tradeWallet/useDepositToTradeExecutor";
@@ -12,16 +13,14 @@ import { fetchTokenBalance } from "@/hooks/useTokenBalance";
 import { isUndefined } from "@/utils";
 import { formatError } from "@/utils/formatError";
 import { GetQuotesResult, getSDaiToWXdaiData } from "@/utils/getQuotes";
+import { getRiskQuotes } from "@/utils/getRiskQuotes";
 import { processMarket } from "@/utils/processMarket";
 
 import { collateral } from "@/consts";
 
-import { useTradeExecutorPredictAll } from "../tradeWallet/useTradeExecutorPredictAll";
-
-import { useRiskPredictionStore } from "@/store/riskMarketStore";
-import { getRiskQuotes } from "@/utils/getRiskQuotes";
 import { useTradeExecutorPredictRiskOutcomes } from "../tradeWallet/useTradeExecutorPredictRiskOutcomes";
 import { computePrices } from "../useImpliedProbs";
+
 import { usePredictState } from "./usePredictState";
 
 interface CheckTradeExecutorResult {
@@ -78,7 +77,7 @@ export function usePredictRiskFlow({
   const predictedPrices = [...prices, priceY];
   const createTradeExecutor = useCreateTradeExecutor();
   const depositToTradeExecutor = useDepositToTradeExecutor(() => {});
-  const tradeExecutorPredictAll = useTradeExecutorPredictAll(() => {});
+  const tradeExecutorPredictAll = useTradeExecutorPredictRiskOutcomes();
 
   useEffect(() => {
     const err =
@@ -278,7 +277,7 @@ export function usePredictRiskFlow({
         (snapshot.initialSDAIDeposit ?? 0n) -
         (sDaiToWXDaiData?.minSDaiReceived ?? 0n);
 
-      await useTradeExecutorPredictRiskOutcomes().mutateAsync({
+      await tradeExecutorPredictAll.mutateAsync({
         quoteResult: quoteResult!,
         tradeExecutor: tradeWallet!,
         mintAmount: mintAmount,
