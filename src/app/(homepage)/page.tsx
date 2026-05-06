@@ -23,7 +23,6 @@ import ExportPredictions from "./components/ParticipateSection/CsvUpload/ExportP
 import PredictAll from "./components/PredictAll";
 import RiskPricing from "./components/RiskPricing";
 import MarketEstimateRisk from "./components/RiskPricing/MarketEstimateRisk";
-import { useImpliedProbsAsync } from "@/hooks/useImpliedProbs";
 
 export default function Home() {
   const { data, isLoading } = useMarketData();
@@ -79,17 +78,6 @@ export default function Home() {
         <div className="flex flex-col gap-4">
           <TradeWalletProvider>
             <ParticipateSection />
-            {/* <div className="flex flex-col gap-4">
-              {markets.map((market, i) => (
-                <MarketContextProvider
-                  key={market.marketId}
-                  selected={winningOutcomes?.at(i)}
-                  {...market}
-                >
-                  <ProjectFunding key={market.marketId} />
-                </MarketContextProvider>
-              ))}
-            </div> */}
             <div className="flex flex-col gap-4">
               {data?.outcomes
                 ? data.outcomes.map((outcome) => {
