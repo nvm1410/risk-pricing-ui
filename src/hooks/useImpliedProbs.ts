@@ -127,178 +127,84 @@ function computePrices(p) {
 function solveProbs(targetY, targetPrices, lr, iters) {
   const n = targetPrices.length;
 
-  // Better initialization than all 0.5
-  let p = targetPrices.map(v =>
-    Math.max(1e-3, Math.min(1 - 1e-3, v))
-  );
+  // Scale eps to the magnitude of the smallest target
+  const minTarget = Math.min(targetY, ...targetPrices);
+  const eps = Math.max(1e-8, minTarget * 1e-3);
 
-  const eps = 1e-5;
+  // Better init: prices underestimate probs, so inflate by ~2x capped
+  let p = targetPrices.map(v =>
+    Math.max(1e-6, Math.min(1 - 1e-6, v * 2))
+  );
 
   function loss(p) {
     const { priceY, prices } = computePrices(p);
-
     let err = (priceY - targetY) ** 2;
-
-    for (let i = 0; i < n; i++) {
-      err += (prices[i] - targetPrices[i]) ** 2;
-    }
-
+    for (let i = 0; i < n; i++) err += (prices[i] - targetPrices[i]) ** 2;
     return err;
   }
 
-  // Adam optimizer state
   const m = Array(n).fill(0);
   const v = Array(n).fill(0);
-
-  const beta1 = 0.9;
-  const beta2 = 0.999;
-  const adamEps = 1e-8;
+  const beta1 = 0.9, beta2 = 0.999, adamEps = 1e-8;
 
   let prevLoss = Infinity;
 
   for (let iter = 1; iter <= iters; iter++) {
     const base = loss(p);
 
-    if (Math.abs(prevLoss - base) < 1e-14) {
-      self.postMessage({
-        type: 'progress',
-        iter,
-        iters,
-        loss: base,
-      });
-
-      break;
-    }
-
+    // Exit threshold scales with the loss magnitude, not absolute
+    if (iter > 1 && Math.abs(prevLoss - base) < base * 1e-9) break;
     prevLoss = base;
 
     const grad = Array(n).fill(0);
-
-    // Central difference gradient
     for (let i = 0; i < n; i++) {
-      const up = [...p];
-      const down = [...p];
-
-      up[i] = Math.min(1 - 1e-6, up[i] + eps);
-      down[i] = Math.max(1e-6, down[i] - eps);
-
-      grad[i] = (loss(up) - loss(down)) / (2 * eps);
+      const up = [...p], down = [...p];
+      up[i]   = Math.min(1 - 1e-9, p[i] + eps);
+      down[i] = Math.max(1e-9,     p[i] - eps);
+      grad[i] = (loss(up) - loss(down)) / (up[i] - down[i]); // use actual step
     }
 
-    // Gradient norm
     let gradNorm = 0;
-
-    for (let i = 0; i < n; i++) {
-      gradNorm += grad[i] * grad[i];
-    }
-
+    for (let i = 0; i < n; i++) gradNorm += grad[i] * grad[i];
     gradNorm = Math.sqrt(gradNorm);
 
-    // Large loss => larger confident steps
-    const lossScale = Math.min(
-      50,
-      Math.max(1, Math.sqrt(base) * 10)
-    );
-
-    const stepScale =
-      gradNorm > 0
-        ? (lr * lossScale) / gradNorm
-        : lr;
+    // Remove the sqrt(base) amplification — it destabilizes small-loss regime
+    const stepScale = gradNorm > 1e-15 ? lr / gradNorm : lr;
 
     const candidate = [...p];
-
     for (let i = 0; i < n; i++) {
-      m[i] =
-        beta1 * m[i] +
-        (1 - beta1) * grad[i];
-
-      v[i] =
-        beta2 * v[i] +
-        (1 - beta2) * grad[i] * grad[i];
-
-      const mHat =
-        m[i] / (1 - Math.pow(beta1, iter));
-
-      const vHat =
-        v[i] / (1 - Math.pow(beta2, iter));
-
-      candidate[i] -=
-        stepScale *
-        mHat /
-        (Math.sqrt(vHat) + adamEps);
-
-      candidate[i] = Math.max(
-        1e-6,
-        Math.min(1 - 1e-6, candidate[i])
-      );
+      m[i] = beta1 * m[i] + (1 - beta1) * grad[i];
+      v[i] = beta2 * v[i] + (1 - beta2) * grad[i] * grad[i];
+      const mHat = m[i] / (1 - beta1 ** iter);
+      const vHat = v[i] / (1 - beta2 ** iter);
+      candidate[i] -= stepScale * mHat / (Math.sqrt(vHat) + adamEps);
+      candidate[i] = Math.max(1e-9, Math.min(1 - 1e-9, candidate[i]));
     }
 
-    // Accept only improving steps
     const candidateLoss = loss(candidate);
-
     if (candidateLoss < base) {
       p = candidate;
     } else {
-      // Backtracking line search
       let improved = false;
-
-      for (
-        let shrink = 0.5;
-        shrink > 1e-4;
-        shrink *= 0.5
-      ) {
-        const trial = [...p];
-
-        for (let i = 0; i < n; i++) {
-          const mHat =
-            m[i] / (1 - Math.pow(beta1, iter));
-
-          const vHat =
-            v[i] / (1 - Math.pow(beta2, iter));
-
-          trial[i] -=
-            shrink *
-            stepScale *
-            mHat /
-            (Math.sqrt(vHat) + adamEps);
-
-          trial[i] = Math.max(
-            1e-6,
-            Math.min(1 - 1e-6, trial[i])
-          );
-        }
-
-        const trialLoss = loss(trial);
-
-        if (trialLoss < base) {
-          p = trial;
-          improved = true;
-          break;
-        }
+      for (let shrink = 0.5; shrink > 1e-6; shrink *= 0.5) {
+        const trial = p.map((pi, i) => {
+          const mHat = m[i] / (1 - beta1 ** iter);
+          const vHat = v[i] / (1 - beta2 ** iter);
+          const stepped = pi - shrink * stepScale * mHat / (Math.sqrt(vHat) + adamEps);
+          return Math.max(1e-9, Math.min(1 - 1e-9, stepped));
+        });
+        if (loss(trial) < base) { p = trial; improved = true; break; }
       }
-
-      // Tiny noise escape
       if (!improved) {
+        // Noise proportional to current scale, not fixed 1e-4
         for (let i = 0; i < n; i++) {
-          p[i] +=
-            (Math.random() - 0.5) * 1e-4;
-
-          p[i] = Math.max(
-            1e-6,
-            Math.min(1 - 1e-6, p[i])
-          );
+          p[i] += (Math.random() - 0.5) * Math.max(1e-7, p[i] * 1e-3);
+          p[i] = Math.max(1e-9, Math.min(1 - 1e-9, p[i]));
         }
       }
     }
 
-    if (iter % 20 === 0) {
-      self.postMessage({
-        type: 'progress',
-        iter,
-        iters,
-        loss: base,
-      });
-    }
+    if (iter % 20 === 0) self.postMessage({ type: 'progress', iter, iters, loss: base });
   }
 
   return p;

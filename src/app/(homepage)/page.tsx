@@ -23,6 +23,7 @@ import ExportPredictions from "./components/ParticipateSection/CsvUpload/ExportP
 import PredictAll from "./components/PredictAll";
 import RiskPricing from "./components/RiskPricing";
 import MarketEstimateRisk from "./components/RiskPricing/MarketEstimateRisk";
+import { useImpliedProbsAsync } from "@/hooks/useImpliedProbs";
 
 export default function Home() {
   const { data, isLoading } = useMarketData();
@@ -62,7 +63,7 @@ export default function Home() {
                   assets={data.outcomes.slice(0, -2).map((outcome) => {
                     return {
                       symbol: outcome.outcome,
-                      risk: Number((outcome.probability * 100).toFixed(2)),
+                      risk: Number((outcome.probability * 100).toFixed(3)),
                     };
                   })}
                 />
