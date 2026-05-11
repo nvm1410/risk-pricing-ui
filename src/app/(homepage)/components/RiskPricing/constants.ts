@@ -12,8 +12,6 @@ export const assetColors = [
   "#14b8a6",
   "#f97316",
 ];
-export const riskPositionExplainLink =
-  "https://ethresear.ch/t/prediction-market-design-for-betting-on-many-highly-improbable-events/8280/23";
 
 type Zone = {
   label: string;

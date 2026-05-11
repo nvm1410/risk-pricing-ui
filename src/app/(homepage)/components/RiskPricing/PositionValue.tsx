@@ -12,7 +12,7 @@ import InfoIcon from "@/assets/svg/info.svg";
 
 import { formatValue, isUndefined } from "@/utils";
 
-import { riskPositionExplainLink } from "./constants";
+import { advancedUserGuide } from "@/consts/markets";
 import RedeemButton from "./RedeemButton";
 
 interface IPositionValue {
@@ -92,7 +92,7 @@ const PositionValue: React.FC<IPositionValue> = ({
           className="px-2 py-2 [&_small]:text-xs"
         >
           <Link
-            href={riskPositionExplainLink}
+            href={advancedUserGuide}
             target="_blank"
             rel="noopener noreferrer"
             className={clsx(

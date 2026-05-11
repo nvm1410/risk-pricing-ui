@@ -16,7 +16,8 @@ import CheckOutline from "@/assets/svg/check-outline-button.svg";
 import InfoIcon from "@/assets/svg/info.svg";
 import MinusOutline from "@/assets/svg/minus-outline.svg";
 
-import { assetColors, riskPositionExplainLink } from "./constants";
+import { advancedUserGuide } from "@/consts/markets";
+import { assetColors } from "./constants";
 import Details from "./Details";
 import PositionValue from "./PositionValue";
 import PredictionSlider from "./PredictionSlider";
@@ -85,7 +86,7 @@ const RiskPricing = ({
                         className="px-2 py-2 [&_small]:text-xs"
                       >
                         <Link
-                          href={riskPositionExplainLink}
+                          href={advancedUserGuide}
                           target="_blank"
                           rel="noopener noreferrer"
                           className={clsx(
