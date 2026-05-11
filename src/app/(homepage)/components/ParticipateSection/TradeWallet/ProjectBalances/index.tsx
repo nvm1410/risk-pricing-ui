@@ -8,8 +8,6 @@ import { useRiskPredictionStore } from "@/store/riskMarketStore";
 import { useTradeWallet } from "@/context/TradeWalletContext";
 import { useTokensBalances } from "@/hooks/useTokenBalances";
 
-
-
 import { assetColors } from "../../../RiskPricing/constants";
 
 import ProjectAmount from "./ProjectAmount";
