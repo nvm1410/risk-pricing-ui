@@ -142,7 +142,7 @@ const getApproveCalls = async (
 ) => {
   const { quotes, mergeAmount } = quoteResult;
   const { sellQuotes, buyQuotes } = quotes;
-
+  console.log(quotes);
   // sell approve calls - consolidate by (token, spender) in case multiple sells
   // share the same token (defensive, typically each sell is a different outcome)
   const sellApproveByKey = new Map<
@@ -153,6 +153,7 @@ const getApproveCalls = async (
     const token = quote.inputAmount.currency.address! as Address;
     const spender = quote.approveAddress as Address;
     const amount = parseUnits(quote.maximumAmountIn().toExact(), DECIMALS);
+    console.log({ amount });
     const key = `${token}-${spender}`;
     const existing = sellApproveByKey.get(key);
     sellApproveByKey.set(key, {
@@ -172,7 +173,7 @@ const getApproveCalls = async (
     }),
   );
 
-  // approve gnosis router to merge UP and DOWN tokens
+  // approve gnosis router to merge
   const mergeApproveCalls =
     mergeAmount > 0n
       ? outcomeIds.map((x) => ({
@@ -185,8 +186,7 @@ const getApproveCalls = async (
         }))
       : [];
 
-  // buy approve calls - consolidate by (token, spender) so multiple buys of same
-  // underlying (UP + DOWN) don't overwrite each other; we need sum of amounts
+  // buy approve calls - consolidate by (token, spender)
   const buyApproveByKey = new Map<
     string,
     { token: Address; spender: Address; amount: bigint }
@@ -282,7 +282,6 @@ async function getTradeExecutorCalls({
 
   calls.push(...buyApproveCalls);
   calls.push(...buySwapTransactions);
-
   return calls;
 }
 

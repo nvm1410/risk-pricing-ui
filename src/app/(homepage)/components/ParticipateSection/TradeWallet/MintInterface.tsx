@@ -10,7 +10,7 @@ import clsx from "clsx";
 import { Address, formatUnits, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 
-import { useTradeExecutorSplit } from "@/hooks/tradeWallet/useTradeExecutorSplit";
+import { useTradeExecutorRiskMarketSplit } from "@/hooks/tradeWallet/useTradeExecutorRiskMarketSplit";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 
 import LightButton from "@/components/LightButton";
@@ -43,7 +43,7 @@ const MintInterface: React.FC<MintInterfaceProps> = ({
   const balance =
     balanceData && formatUnits(balanceData.value, balanceData.decimals);
 
-  const tradeExecutorSplit = useTradeExecutorSplit(() => {
+  const tradeExecutorSplit = useTradeExecutorRiskMarketSplit(() => {
     setAmount(undefined);
     toggleIsOpen();
   });

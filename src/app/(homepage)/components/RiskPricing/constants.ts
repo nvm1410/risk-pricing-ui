@@ -1,3 +1,5 @@
+import { gnosis, mainnet, optimism, base } from "viem/chains";
+
 export const assetColors = [
   "#22c55e",
   "#3b82f6",
@@ -51,3 +53,10 @@ export const zones: Zone[] = [
     colors: ["#f9a8d4", "#fb7185"],
   },
 ];
+
+export const BLOCK_EXPLORER_URLS: Partial<Record<number, string>> = {
+  [gnosis.id]: "https://gnosisscan.io",
+  [mainnet.id]: "https://etherscan.io",
+  [optimism.id]: "https://optimistic.etherscan.io",
+  [base.id]: "https://basescan.org",
+};

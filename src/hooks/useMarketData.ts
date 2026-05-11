@@ -8,7 +8,7 @@ import { Market, PoolHourData, SerializedMarket } from "@/types/market-types";
 
 import { RISK_PRICING_MARKET_ID } from "@/consts/markets";
 
-import { isTwoStringsEqual } from "./liquidity/utils";
+import { isTwoStringsEqual, sqrtPriceX96ToPrice } from "./liquidity/utils";
 
 import { useImpliedProbsAsync } from "./useImpliedProbs";
 import { useTokensInfo } from "./useTokensInfo";
@@ -85,9 +85,12 @@ export const useMarketData = () => {
           const outcomeId = marketData.wrappedTokens[index];
           const latestPoolHourData = outcomeChartData.at(-1);
           if (!latestPoolHourData) return 0;
+          const [price0, price1] = sqrtPriceX96ToPrice(
+            BigInt(latestPoolHourData.sqrtPrice),
+          );
           return isTwoStringsEqual(outcomeId, latestPoolHourData.pool.token0.id)
-            ? Number(latestPoolHourData.token1Price)
-            : Number(latestPoolHourData.token0Price);
+            ? Number(price0)
+            : Number(price1);
         })
       : undefined;
   const state = useImpliedProbsAsync(

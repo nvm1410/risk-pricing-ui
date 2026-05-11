@@ -132,7 +132,9 @@ const RiskPricing = ({
                   "w-full max-w-full",
                   "[&_#expand-button]:bg-klerosUIComponentsLightBackground [&_#expand-button_p]:font-normal",
                 )}
-                items={[{ title: "Details", body: <Details /> }]}
+                items={[
+                  { title: "Details", body: <Details outcome={outcome} /> },
+                ]}
               />
             </div>
           ),

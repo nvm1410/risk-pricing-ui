@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { format } from "date-fns";
 import Image from "next/image";
 
 import SeerLogo from "@/components/SeerLogo";
@@ -6,7 +7,7 @@ import SeerLogo from "@/components/SeerLogo";
 import SeerHeaderBackground from "@/assets/png/seer-header-bg.png";
 import ChartBar from "@/assets/svg/chart-bar.svg";
 
-import { endDate, marketMetadata } from "@/consts/markets";
+import { endTime, marketMetadata } from "@/consts/markets";
 
 import Countdown from "./Countdown";
 
@@ -23,7 +24,7 @@ const Header: React.FC = () => {
             Trading Period:
           </span>
           <span className="text-klerosUIComponentsPrimaryText text-sm font-semibold">
-            Until {endDate}
+            Until {format(endTime, "EEEE do MMMM HH:mm 'UTC'")}
           </span>
         </div>
         <Countdown />

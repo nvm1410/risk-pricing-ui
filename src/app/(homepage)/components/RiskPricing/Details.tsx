@@ -1,4 +1,14 @@
-export default function RiskPanel() {
+import { gnosis } from "viem/chains";
+
+import { RiskPricingOutcome } from "@/hooks/useMarketData";
+
+import { BLOCK_EXPLORER_URLS } from "./constants";
+
+export default function RiskPanel({
+  outcome,
+}: {
+  outcome: RiskPricingOutcome;
+}) {
   return (
     <div className="w-full max-w-[1080px] rounded-[20px] border border-black/10 bg-white text-black">
       {/* Header */}
@@ -151,9 +161,14 @@ export default function RiskPanel() {
                 Gnosis Contract
               </span>
 
-              <span className="text-[14px] text-[#9c9c9c]">
-                0x0f388d7e65a969dbcbfab21bc3ab6629af78f4cf
-              </span>
+              <a
+                className="text-[14px] text-[#9c9c9c]"
+                href={`${BLOCK_EXPLORER_URLS[gnosis.id]}/address/${outcome.outcomeId}`}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                {outcome.outcomeId}
+              </a>
             </div>
           </div>
         </div>

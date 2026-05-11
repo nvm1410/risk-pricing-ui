@@ -10,7 +10,9 @@ import clsx from "clsx";
 import { Address, formatUnits, parseUnits } from "viem";
 import { useAccount } from "wagmi";
 
-import { useTradeExecutorMerge } from "@/hooks/tradeWallet/useTradeExecutorMerge";
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+
+import { useTradeExecutorRiskMarketMerge } from "@/hooks/tradeWallet/useTradeExecutorRiskMarketMerge";
 import { useTokensBalances } from "@/hooks/useTokenBalances";
 
 import LightButton from "@/components/LightButton";
@@ -20,7 +22,6 @@ import CloseIcon from "@/assets/svg/close-icon.svg";
 import { formatValue, isUndefined } from "@/utils";
 
 import { collateral, DECIMALS } from "@/consts";
-import { markets } from "@/consts/markets";
 
 interface MergeInterfaceProps {
   isOpen: boolean;
@@ -36,26 +37,26 @@ const MergeInterface: React.FC<MergeInterfaceProps> = ({
   const [amount, setAmount] = useState<string>();
 
   const { address: account } = useAccount();
-
-  const { data: marketBalances, isLoading: isBalanceLoading } =
+  const outcomes = useRiskPredictionStore((state) => state.outcomes);
+  const { data: outcomeBalances, isLoading: isBalanceLoading } =
     useTokensBalances(
       tradeExecutor,
-      markets.map(({ underlyingToken }) => underlyingToken),
+      outcomes.map(({ outcomeId }) => outcomeId),
     );
 
   const minMarketBalance = useMemo<bigint>(() => {
-    if (!isUndefined(marketBalances)) {
-      if (marketBalances.some((result) => typeof result !== "bigint"))
+    if (!isUndefined(outcomeBalances)) {
+      if (outcomeBalances.some((result) => typeof result !== "bigint"))
         return 0n;
-      const minResult = marketBalances.reduce((acc, curr) =>
+      const minResult = outcomeBalances.reduce((acc, curr) =>
         curr! < acc! ? curr : acc,
       );
       return minResult as bigint;
     }
     return 0n;
-  }, [marketBalances]);
+  }, [outcomeBalances]);
 
-  const tradeExecutorMerge = useTradeExecutorMerge(() => {
+  const tradeExecutorMerge = useTradeExecutorRiskMarketMerge(() => {
     setAmount(undefined);
     toggleIsOpen();
   });
@@ -70,6 +71,7 @@ const MergeInterface: React.FC<MergeInterfaceProps> = ({
     tradeExecutorMerge.mutate({
       amount: parseUnits(mergeAmount as string, collateral.decimals),
       tradeExecutor,
+      outcomeIds: outcomes.map((outcome) => outcome.outcomeId),
     });
   };
 

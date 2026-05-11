@@ -10,10 +10,10 @@ export const faqLink =
   "https://kleros.notion.site/Kleros-Foresight-Beginner-User-Guide-30d9a9db4f088064a588f7d5acc2751f#30d9a9db4f088138a266e870c56159e0";
 
 export const beginnerUserGuide =
-  "https://kleros.notion.site/Kleros-Foresight-Beginner-User-Guide-30d9a9db4f088064a588f7d5acc2751f";
+  "https://jagged-ironclad-e1b.notion.site/Default-Risk-Prediction-Markets-Beginner-User-Guide-35da95a2cc7d80fba056c16d17e99303?source=copy_link";
 
 export const advancedUserGuide =
-  "https://kleros.notion.site/Kleros-Foresight-Advanced-Guide-What-Actually-Happens-After-Your-First-Prediction-30d9a9db4f0880f8a44ecb13d34ad3c6";
+  "https://jagged-ironclad-e1b.notion.site/Default-Risk-Prediction-Markets-Under-the-hood-35da95a2cc7d80429390eda234554ec8?source=copy_link";
 
 export const tgLink = "https://t.me/+HrYn_tzqTGFlYTc0";
 
@@ -31,7 +31,7 @@ export const invalidMarket: Address =
 
 // in unix timestamp, seconds
 export const startTime: number = 1771871400;
-export const endTime: number = 1775239200;
+export const endTime: number = 1798675200; //Thu, 31 Dec 2026 00:00:00 GMT
 export const endDate: string = "Friday 3rd April 18:00 UTC";
 export interface IDetails {
   imdbURL?: string;

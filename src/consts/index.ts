@@ -81,7 +81,7 @@ export const collateral = {
   decimals: 18,
 };
 export const DECIMALS = 18;
-export const VOLUME_MIN = 0.01;
+export const VOLUME_MIN = 0.001;
 /** Buffer applied to collateral allocation for batch predictions to account
  *  for swap slippage chain effects (0.98 = 2% safety margin) */
 export const PREDICTION_SLIPPAGE_BUFFER = 0.98;

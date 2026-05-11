@@ -11,7 +11,7 @@ import Feedback from "@/assets/menu-icons/feedback.svg";
 import Faq from "@/assets/menu-icons/help.svg";
 import Telegram from "@/assets/menu-icons/telegram.svg";
 
-import { appGuideLink, faqLink, tgLink } from "@/consts/markets";
+import { beginnerUserGuide, tgLink } from "@/consts/markets";
 
 // TODO : update links
 const ITEMS = [
@@ -33,7 +33,7 @@ const ITEMS = [
   {
     text: "App Guide",
     Icon: Guide,
-    url: appGuideLink,
+    url: beginnerUserGuide,
   },
   {
     text: "Crypto Beginner's Guide",
@@ -43,7 +43,7 @@ const ITEMS = [
   {
     text: "FAQ",
     Icon: Faq,
-    url: faqLink,
+    url: beginnerUserGuide,
   },
 ];
 

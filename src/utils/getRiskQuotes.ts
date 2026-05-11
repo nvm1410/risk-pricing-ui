@@ -113,13 +113,12 @@ export const getRiskQuotes = async ({
   const bufferedCollateral =
     (totalCollateral * BigInt(Math.round(PREDICTION_SLIPPAGE_BUFFER * 100))) /
     100n;
-
   if (!totalCollateral) {
     throw new Error(
       "Quote Error: Not enough collateral. Could not acquire enough collateral to find buy quotes",
     );
   }
-
+  console.log(buyOutcomes);
   // get buy quotes
   const sumBuyDifference = buyOutcomes.reduce(
     (acc, curr) => acc + curr.difference,
@@ -142,7 +141,6 @@ export const getRiskQuotes = async ({
         ) > availableBuyVolume
           ? formatUnits(availableBuyVolume, DECIMALS)
           : outcome.volumeUntilPrice.collateralVolume.toString();
-
       if (Number(volume) < VOLUME_MIN) {
         return promises;
       }

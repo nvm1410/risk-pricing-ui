@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import { Button, Card, DropdownSelect } from "@kleros/ui-components-library";
 import clsx from "clsx";
 import Link from "next/link";
@@ -7,7 +5,6 @@ import { useToggle } from "react-use";
 import { useAccount } from "wagmi";
 
 import { useTradeWallet } from "@/context/TradeWalletContext";
-import { useGetWinningOutcomes } from "@/hooks/useGetWinningOutcomes";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 
 import WithHelpTooltip from "@/components/WithHelpTooltip";
@@ -15,10 +12,9 @@ import WithHelpTooltip from "@/components/WithHelpTooltip";
 import ExternalArrow from "@/assets/svg/external-arrow.svg";
 import WalletIcon from "@/assets/svg/wallet.svg";
 
-import { formatValue, isUndefined, shortenAddress } from "@/utils";
+import { formatValue, shortenAddress } from "@/utils";
 
 import { collateral } from "@/consts";
-import { parentConditionId } from "@/consts/markets";
 
 import { DepositInterface } from "./DepositInterface";
 import MergeInterface from "./MergeInterface";
@@ -45,15 +41,15 @@ export const TradeWallet = () => {
 
   const blockExplorerUrl = chain?.blockExplorers?.default?.url;
 
-  const { data: parentWinningOutcomes } =
-    useGetWinningOutcomes(parentConditionId);
-  const isParentResolved = useMemo(
-    () =>
-      isUndefined(parentWinningOutcomes)
-        ? false
-        : parentWinningOutcomes.some((val) => val === true),
-    [parentWinningOutcomes],
-  );
+  // const { data: parentWinningOutcomes } =
+  //   useGetWinningOutcomes(parentConditionId);
+  // const isParentResolved = useMemo(
+  //   () =>
+  //     isUndefined(parentWinningOutcomes)
+  //       ? false
+  //       : parentWinningOutcomes.some((val) => val === true),
+  //   [parentWinningOutcomes],
+  // );
 
   return (
     <>
@@ -111,14 +107,14 @@ export const TradeWallet = () => {
                   onPress={toggleIsWithdrawOpen}
                 />
 
-                {isParentResolved ? (
+                {/* {isParentResolved ? (
                   <Button
                     onClick={() => toggleIsRedeemOpen()}
                     variant="secondary"
                     small
                     text="Redeem outcome tokens"
                   />
-                ) : null}
+                ) : null} */}
                 <DropdownSelect
                   simpleButton
                   placeholder="Advanced Options"

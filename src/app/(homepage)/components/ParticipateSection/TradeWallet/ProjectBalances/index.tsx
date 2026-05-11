@@ -3,6 +3,8 @@ import React from "react";
 import { CustomAccordion } from "@kleros/ui-components-library";
 import clsx from "clsx";
 
+import { useRiskPredictionStore } from "@/store/riskMarketStore";
+
 import { useTradeWallet } from "@/context/TradeWalletContext";
 import { useTokensBalances } from "@/hooks/useTokenBalances";
 
@@ -10,14 +12,16 @@ import MovieIcon from "@/assets/svg/movie.svg";
 
 import { markets } from "@/consts/markets";
 
+import { assetColors } from "../../../RiskPricing/constants";
+
 import ProjectAmount from "./ProjectAmount";
 
 const ProjectBalances: React.FC = () => {
   const { tradeExecutor } = useTradeWallet();
-
-  const { data: marketBalances } = useTokensBalances(
+  const outcomes = useRiskPredictionStore((state) => state.outcomes);
+  const { data: outcomeBalances } = useTokensBalances(
     tradeExecutor,
-    markets.map(({ underlyingToken }) => underlyingToken),
+    outcomes.map(({ outcomeId }) => outcomeId),
   );
   return (
     <CustomAccordion
@@ -26,9 +30,8 @@ const ProjectBalances: React.FC = () => {
         {
           title: (
             <div className="flex items-center gap-2">
-              <MovieIcon className="size-6" />
               <label className="text-klerosUIComponentsPrimaryText text-sm">
-                Movie tokens
+                Asset tokens
               </label>
             </div>
           ),
@@ -38,11 +41,14 @@ const ProjectBalances: React.FC = () => {
                 "grid w-full grid-cols-[repeat(auto-fit,minmax(200px,260px))] place-content-center gap-4",
               )}
             >
-              {markets.map(({ name, color }, i) => (
+              {outcomes.map(({ symbol, outcomeIndex }, i) => (
                 <ProjectAmount
-                  key={name}
-                  {...{ name, color }}
-                  balance={marketBalances?.[i]}
+                  key={symbol}
+                  {...{
+                    name: symbol,
+                    color: assetColors[outcomeIndex % assetColors.length],
+                  }}
+                  balance={outcomeBalances?.[i]}
                 />
               ))}
             </div>

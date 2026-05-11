@@ -14,7 +14,7 @@ import { isUndefined } from "@/utils";
 import { formatError } from "@/utils/formatError";
 import { GetQuotesResult, getSDaiToWXdaiData } from "@/utils/getQuotes";
 import { getRiskQuotes } from "@/utils/getRiskQuotes";
-import { processMarket } from "@/utils/processMarket";
+import { processRiskMarket } from "@/utils/processRiskMarket";
 
 import { collateral } from "@/consts";
 
@@ -218,7 +218,6 @@ export function usePredictRiskFlow({
         tradeWallet!,
         creditsToSwap,
       );
-
       // the expected/equivalent sDAI received by using SeerCredits can be less than initially calculated
       // so adjusting
       if (
@@ -235,9 +234,9 @@ export function usePredictRiskFlow({
 
       // process outcome predictions
       const processedPredictions = await Promise.all(
-        outcomes.map(async (outcome, index) => {
+        outcomes.slice(0, -1).map(async (outcome, index) => {
           const mintAmount = snapshot.initialSDAIDeposit ?? 0n;
-          const outcomeProcessed = await processMarket({
+          const outcomeProcessed = await processRiskMarket({
             underlying: outcome.collateral,
             outcome: outcome.outcomeId,
             tradeExecutor: tradeWallet!,
@@ -247,7 +246,7 @@ export function usePredictRiskFlow({
           return outcomeProcessed;
         }),
       );
-
+      console.log(processedPredictions);
       setFlag("isProcessingMarkets", false);
 
       // get quotes
@@ -271,7 +270,7 @@ export function usePredictRiskFlow({
 
       setFlag("isLoadingQuotes", false);
       setFlag("chunkProgressMessage", undefined);
-
+      console.log(quoteResult);
       // execute trade
       const mintAmount =
         (snapshot.initialSDAIDeposit ?? 0n) -
