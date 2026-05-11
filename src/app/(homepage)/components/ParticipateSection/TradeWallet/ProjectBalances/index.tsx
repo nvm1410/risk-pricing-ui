@@ -8,9 +8,7 @@ import { useRiskPredictionStore } from "@/store/riskMarketStore";
 import { useTradeWallet } from "@/context/TradeWalletContext";
 import { useTokensBalances } from "@/hooks/useTokenBalances";
 
-import MovieIcon from "@/assets/svg/movie.svg";
 
-import { markets } from "@/consts/markets";
 
 import { assetColors } from "../../../RiskPricing/constants";
 
