@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { assetColors, zones } from "../constants";
+import { assetColors, zoneAxis, zones } from "../constants";
 
 type AssetRisk = {
   symbol: string;
@@ -14,7 +14,7 @@ type MarketEstimateRiskProps = {
 
 export default function MarketEstimateRisk({
   assets,
-  maxRisk = 20,
+  maxRisk = 100,
 }: MarketEstimateRiskProps) {
   const [visibleAssets, setVisibleAssets] = useState<string[]>(
     assets.map((a) => a.symbol),
@@ -27,8 +27,25 @@ export default function MarketEstimateRisk({
         : [...prev, symbol],
     );
   };
+
+  /**
+   * Log scale mapping
+   * Keeps low-end ranges visually meaningful
+   */
+  const scale = (value: number) => {
+    if (value <= 0) return 0;
+
+    return Math.log(value + 1) / Math.log(maxRisk + 1);
+  };
+
+  /**
+   * Convert value -> percent on screen
+   */
+  const scaledPercent = (value: number) => scale(value) * 100;
+
   return (
     <>
+      {/* Pills */}
       <div className="flex flex-wrap gap-2 p-6">
         {assets.map((asset, index) => {
           const assetColor = assetColors[index % assetColors.length];
@@ -63,6 +80,8 @@ export default function MarketEstimateRisk({
           Clear all
         </button>
       </div>
+
+      {/* Chart */}
       <div className="w-full">
         <h2 className="mb-8 text-2xl font-semibold text-[#333333]">
           Market Estimate Risk
@@ -71,13 +90,13 @@ export default function MarketEstimateRisk({
         <div className="relative">
           {/* Grid lines */}
           <div className="pointer-events-none absolute inset-0">
-            {[0, 3, 5, 10, 20].map((value) => (
+            {zoneAxis.map((value) => (
               <div
                 key={value}
                 className="absolute top-0 border-l border-dashed border-neutral-300"
                 style={{
-                  left: `${(value / maxRisk) * 100}%`,
-                  height: "calc(100% - 120px)", // adjust this
+                  left: `${scaledPercent(value)}%`,
+                  height: "calc(100% - 120px)",
                 }}
               />
             ))}
@@ -89,28 +108,39 @@ export default function MarketEstimateRisk({
               .filter((asset) => visibleAssets.includes(asset.symbol))
               .map((asset, index) => {
                 const assetColor = assetColors[index % assetColors.length];
+
+                /**
+                 * Track width uses LOG SCALE
+                 */
+                const widthPercent = scaledPercent(asset.risk);
+
+                /**
+                 * Gradient stops relative to the asset width
+                 */
                 const gradientStops = zones
                   .flatMap((zone) => {
-                    // Skip zones completely outside asset risk
                     if (zone.from >= asset.risk) return [];
 
-                    // Clamp zone end to asset risk
                     const clampedTo = Math.min(zone.to, asset.risk);
 
-                    // Normalize relative to THIS asset risk
-                    const start = (zone.from / asset.risk) * 100;
-                    const end = (clampedTo / asset.risk) * 100;
+                    /**
+                     * IMPORTANT:
+                     * Normalize against asset risk,
+                     * not global maxRisk
+                     */
+                    const start = (scale(zone.from) / scale(asset.risk)) * 100;
+
+                    const end = (scale(clampedTo) / scale(asset.risk)) * 100;
 
                     const [from, to] = zone.colors;
 
                     return [`${from} ${start}%`, `${to} ${end}%`];
                   })
                   .join(", ");
-                const widthPercent = (asset.risk / maxRisk) * 100;
 
                 return (
                   <div key={asset.symbol} className="relative h-8">
-                    {/* Zone gradient track */}
+                    {/* Gradient track */}
                     <div
                       className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full"
                       style={{
@@ -119,11 +149,12 @@ export default function MarketEstimateRisk({
                       }}
                     />
 
-                    {/* Asset overlay */}
+                    {/* Overlay */}
                     <div
                       className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full opacity-70"
                       style={{
                         width: `${widthPercent}%`,
+                        backgroundColor: assetColor,
                       }}
                     />
 
@@ -152,32 +183,32 @@ export default function MarketEstimateRisk({
 
           {/* Zones */}
           <div className="relative mt-14">
-            {/* overflow-visible is important */}
             <div className="overflow-visible rounded-xl">
               <div className="flex h-24 overflow-visible">
-                {zones.map((zone, index) => {
-                  const width = ((zone.to - zone.from) / maxRisk) * 100;
+                {zones.map((zone) => {
+                  /**
+                   * Zone width also uses LOG SCALE
+                   */
+                  const left = scale(zone.from);
+                  const right = scale(zone.to);
 
-                  const backgrounds = [
-                    "bg-gradient-to-r from-green-200 to-green-100",
-                    "bg-gradient-to-r from-yellow-100 to-orange-100",
-                    "bg-gradient-to-r from-pink-100 to-pink-200",
-                    "bg-gradient-to-r from-pink-300 to-rose-400",
-                  ];
+                  const width = (right - left) * 100;
 
                   return (
                     <div
                       key={zone.label}
-                      className={`relative flex flex-col items-center justify-center overflow-visible ${backgrounds[index]}`}
+                      className="relative flex flex-col items-center justify-center overflow-visible"
                       style={{
                         width: `${width}%`,
+                        background: `linear-gradient(to right, ${zone.colors[0]}, ${zone.colors[1]})`,
                       }}
                     >
-                      {/* Emoji half outside */}
-                      <div className="absolute -top-5 z-20 rounded-full border-[2px] border-white bg-white text-3xl">
+                      {/* Emoji */}
+                      <div className="absolute -top-5 z-20 rounded-full border-[4px] border-white bg-white text-3xl">
                         {zone.emoji}
                       </div>
 
+                      {/* Label */}
                       <div className="mt-5 text-sm font-medium text-neutral-800">
                         {zone.label}
                       </div>
@@ -189,12 +220,12 @@ export default function MarketEstimateRisk({
 
             {/* Axis */}
             <div className="relative mt-3 h-5 text-sm text-neutral-600">
-              {[0, 3, 5, 10, 20].map((value) => (
+              {zoneAxis.map((value) => (
                 <div
                   key={value}
                   className="absolute -translate-x-1/2"
                   style={{
-                    left: `${(value / maxRisk) * 100}%`,
+                    left: `${scaledPercent(value)}%`,
                   }}
                 >
                   {value}

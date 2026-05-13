@@ -26,13 +26,13 @@ export const zones: Zone[] = [
     label: "SAFE",
     emoji: "😊",
     from: 0,
-    to: 3,
+    to: 2,
     colors: ["#bbf7d0", "#dcfce7"],
   },
   {
     label: "CAUTION",
     emoji: "🙄",
-    from: 3,
+    from: 2,
     to: 5,
     colors: ["#fef9c3", "#fed7aa"],
   },
@@ -47,11 +47,13 @@ export const zones: Zone[] = [
     label: "DANGER",
     emoji: "😱",
     from: 10,
-    to: 20,
+    to: 100,
     colors: ["#f9a8d4", "#fb7185"],
   },
 ];
-
+export const zoneAxis = zones
+  .map((x) => x.from)
+  .concat([zones.at(-1)?.to ?? 100]);
 export const BLOCK_EXPLORER_URLS: Partial<Record<number, string>> = {
   [gnosis.id]: "https://gnosisscan.io",
   [mainnet.id]: "https://etherscan.io",
