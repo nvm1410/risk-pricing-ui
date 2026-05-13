@@ -13,6 +13,7 @@ import InfoIcon from "@/assets/svg/info.svg";
 import { formatValue, isUndefined } from "@/utils";
 
 import { advancedUserGuide } from "@/consts/markets";
+
 import RedeemButton from "./RedeemButton";
 
 interface IPositionValue {

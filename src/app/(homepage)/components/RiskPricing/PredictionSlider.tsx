@@ -42,7 +42,6 @@ const fromScaledValue = (scaled: number) => {
 
 const PredictionSliderContent = ({
   outcome,
-  isNoToAll: _isNoToAll,
 }: {
   outcome: RiskPricingOutcome;
   isNoToAll: boolean;

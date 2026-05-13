@@ -17,6 +17,7 @@ import InfoIcon from "@/assets/svg/info.svg";
 import MinusOutline from "@/assets/svg/minus-outline.svg";
 
 import { advancedUserGuide } from "@/consts/markets";
+
 import { assetColors } from "./constants";
 import Details from "./Details";
 import PositionValue from "./PositionValue";
