@@ -10,11 +10,13 @@ type AssetRisk = {
 type MarketEstimateRiskProps = {
   assets: AssetRisk[];
   maxRisk?: number;
+  noToAllProbability?: number;
 };
 
 export default function MarketEstimateRisk({
   assets,
   maxRisk = 100,
+  noToAllProbability,
 }: MarketEstimateRiskProps) {
   const [visibleAssets, setVisibleAssets] = useState<string[]>(
     assets.map((a) => a.symbol),
@@ -233,6 +235,29 @@ export default function MarketEstimateRisk({
               ))}
             </div>
           </div>
+          {noToAllProbability !== undefined && (
+            <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium text-emerald-700">
+                    NO TO ALL
+                  </div>
+
+                  <div className="mt-1 text-xs text-emerald-600">
+                    Chance that no listed asset defaults
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🛡️</span>
+
+                  <span className="text-2xl font-bold text-emerald-700">
+                    {noToAllProbability}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -66,6 +66,13 @@ export default function Home() {
                       risk: Number((outcome.probability * 100).toFixed(3)),
                     };
                   })}
+                  noToAllProbability={
+                    data.outcomes.at(-2)?.probability
+                      ? Number(
+                          (data.outcomes.at(-2)!.probability * 100).toFixed(3),
+                        )
+                      : undefined
+                  }
                 />
               ) : null}
             </>
