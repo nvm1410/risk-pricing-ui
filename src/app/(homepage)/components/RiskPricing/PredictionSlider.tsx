@@ -30,22 +30,24 @@ const LoadingSkeleton: React.FC = () => (
 );
 const maxValue = 100;
 
-const scale = (value: number) => {
-  if (value <= 0) return 0;
-
-  return (Math.log10(value + 1) / Math.log10(maxValue + 1)) * maxValue;
-};
-
-const fromScaledValue = (scaled: number) => {
-  return Math.pow(10, (scaled / maxValue) * Math.log10(maxValue + 1)) - 1;
-};
-
 const PredictionSliderContent = ({
   outcome,
+  isNoToAll,
 }: {
   outcome: RiskPricingOutcome;
   isNoToAll: boolean;
 }) => {
+  const scale = (value: number) => {
+    if (isNoToAll) return value;
+    if (value <= 0) return 0;
+
+    return (Math.log10(value + 1) / Math.log10(maxValue + 1)) * maxValue;
+  };
+
+  const fromScaledValue = (scaled: number) => {
+    if (isNoToAll) return scaled;
+    return Math.pow(10, (scaled / maxValue) * Math.log10(maxValue + 1)) - 1;
+  };
   const predictions = useRiskPredictionStore((state) => state.riskPredictions);
 
   const setPredictions = useRiskPredictionStore(
@@ -86,8 +88,8 @@ const PredictionSliderContent = ({
           <div
             className={clsx("rounded-base px-2 py-0.75 text-center text-xs")}
             style={{
-              backgroundColor: color,
-              color: getReadableTextColor(color),
+              backgroundColor: isNoToAll ? "#7bcbff" : color,
+              color: getReadableTextColor(isNoToAll ? "#7bcbff" : color),
             }}
           >
             {`${(outcome.probability * 100).toFixed(3)}%`}
@@ -130,47 +132,51 @@ const PredictionSliderContent = ({
         />
 
         {/* Zones */}
-        <div className="mt-3 flex h-12 overflow-visible rounded-xl">
-          {zones.map((zone) => {
-            const width = scale(zone.to) - scale(zone.from);
+        {!isNoToAll && (
+          <div className="mt-3 flex h-12 overflow-visible rounded-xl">
+            {zones.map((zone) => {
+              const width = scale(zone.to) - scale(zone.from);
 
-            return (
-              <div
-                key={zone.label}
-                className="relative flex items-center justify-center overflow-visible"
-                style={{
-                  width: `${width}%`,
-                  background: `linear-gradient(to right, ${zone.colors[0]}, ${zone.colors[1]})`,
-                }}
-              >
-                {/* Emoji */}
-                <div className="absolute -top-4 z-10 rounded-full border-4 border-white bg-white text-xl">
-                  {zone.emoji}
+              return (
+                <div
+                  key={zone.label}
+                  className="relative flex items-center justify-center overflow-visible"
+                  style={{
+                    width: `${width}%`,
+                    background: `linear-gradient(to right, ${zone.colors[0]}, ${zone.colors[1]})`,
+                  }}
+                >
+                  {/* Emoji */}
+                  <div className="absolute -top-4 z-10 rounded-full border-4 border-white bg-white text-xl">
+                    {zone.emoji}
+                  </div>
+
+                  {/* Label */}
+                  <span className="mt-4 px-1 text-center text-[10px] font-medium text-neutral-700">
+                    {zone.label}
+                  </span>
                 </div>
-
-                {/* Label */}
-                <span className="mt-4 px-1 text-center text-[10px] font-medium text-neutral-700">
-                  {zone.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Axis */}
-        <div className="relative mt-2 h-4 text-xs text-neutral-500">
-          {zoneAxis.map((value) => (
-            <div
-              key={value}
-              className="absolute -translate-x-1/2"
-              style={{
-                left: `${scale(value)}%`,
-              }}
-            >
-              {value}
-            </div>
-          ))}
-        </div>
+        {!isNoToAll && (
+          <div className="relative mt-2 h-4 text-xs text-neutral-500">
+            {zoneAxis.map((value) => (
+              <div
+                key={value}
+                className="absolute -translate-x-1/2"
+                style={{
+                  left: `${scale(value)}%`,
+                }}
+              >
+                {value}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     ),
     { width: 300 },
