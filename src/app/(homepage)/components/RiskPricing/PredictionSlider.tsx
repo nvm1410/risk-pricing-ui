@@ -127,7 +127,7 @@ const PredictionSliderContent = ({
           // @ts-expect-error other values not needed
           theme={{
             sliderColor: "#D2FFDC",
-            thumbColor: "#FFFFFF",
+            thumbColor: "#D2FFDC",
           }}
         />
 
