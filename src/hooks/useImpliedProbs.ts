@@ -241,8 +241,10 @@ self.onmessage = function(e) {
 
 function makeWorker() {
   const blob = new Blob([WORKER_SRC], { type: "application/javascript" });
-
-  return new Worker(URL.createObjectURL(blob));
+  const url = URL.createObjectURL(blob);
+  const worker = new Worker(url);
+  URL.revokeObjectURL(url);
+  return worker;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────

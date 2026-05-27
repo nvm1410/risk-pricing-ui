@@ -38,9 +38,10 @@ const RiskPricing = ({
     outcomeId,
     outcomeIndex,
   } = outcome;
-  const predictions = useRiskPredictionStore((state) => state.riskPredictions);
-  const isSelected =
-    predictions[outcomeId] && predictions[outcomeId] !== probability;
+  const isSelected = useRiskPredictionStore((state) => {
+    const pred = state.riskPredictions[outcomeId];
+    return pred !== undefined && pred !== probability;
+  });
   const { tradeExecutor } = useTradeWallet();
 
   const { value } = useRiskTokenPositionValue(

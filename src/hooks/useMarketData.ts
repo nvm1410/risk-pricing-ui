@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Address } from "viem";
 import { gnosis } from "viem/chains";
@@ -79,20 +80,23 @@ export const useMarketData = () => {
   });
   const marketData = queryResult.data?.marketData;
   const chartData = queryResult.data?.chartData;
-  const prices =
-    marketData && chartData
-      ? chartData.map((outcomeChartData, index) => {
-          const outcomeId = marketData.wrappedTokens[index];
-          const latestPoolHourData = outcomeChartData.at(-1);
-          if (!latestPoolHourData) return 0;
-          const [price0, price1] = sqrtPriceX96ToPrice(
-            BigInt(latestPoolHourData.sqrtPrice),
-          );
-          return isTwoStringsEqual(outcomeId, latestPoolHourData.pool.token0.id)
-            ? Number(price0)
-            : Number(price1);
-        })
-      : undefined;
+  const prices = useMemo(
+    () =>
+      marketData && chartData
+        ? chartData.map((outcomeChartData, index) => {
+            const outcomeId = marketData.wrappedTokens[index];
+            const latestPoolHourData = outcomeChartData.at(-1);
+            if (!latestPoolHourData) return 0;
+            const [price0, price1] = sqrtPriceX96ToPrice(
+              BigInt(latestPoolHourData.sqrtPrice),
+            );
+            return isTwoStringsEqual(outcomeId, latestPoolHourData.pool.token0.id)
+              ? Number(price0)
+              : Number(price1);
+          })
+        : undefined,
+    [marketData, chartData],
+  );
   const state = useImpliedProbsAsync(
     prices ? (prices.at(prices.length - 2) ?? 0) : 0,
     prices?.slice(0, -2) ?? [],
@@ -101,22 +105,28 @@ export const useMarketData = () => {
   const probabilities =
     state.status === "done" ? [...state.probs, state.priceY, 0] : undefined;
   const { data } = useTokensInfo(marketData?.wrappedTokens, gnosis.id);
-  const outcomes = marketData
-    ? marketData.wrappedTokens.map((outcomeId, index) => {
-        const outcome = marketData.outcomes[index] ?? "";
-        return {
-          outcomeId,
-          outcome,
-          price: prices?.[index] ?? 0,
-          probability: probabilities?.[index] ?? 0,
-          collateral: marketData.collateralToken,
-          outcomeIndex: index,
-          symbol: data?.[index]?.symbol ?? outcome.slice(0, 11).toUpperCase(),
-        };
-      })
-    : undefined;
+  const outcomes = useMemo(
+    () =>
+      marketData
+        ? marketData.wrappedTokens.map((outcomeId, index) => {
+            const outcome = marketData.outcomes[index] ?? "";
+            return {
+              outcomeId,
+              outcome,
+              price: prices?.[index] ?? 0,
+              probability: probabilities?.[index] ?? 0,
+              collateral: marketData.collateralToken,
+              outcomeIndex: index,
+              symbol: data?.[index]?.symbol ?? outcome.slice(0, 11).toUpperCase(),
+            };
+          })
+        : undefined,
+    [marketData, prices, probabilities, data],
+  );
   const setOutcomes = useRiskPredictionStore((state) => state.setOutcomes);
-  setOutcomes(outcomes ?? []);
+  useEffect(() => {
+    setOutcomes(outcomes ?? []);
+  }, [outcomes, setOutcomes]);
   if (!outcomes) return queryResult;
   return { ...queryResult, data: { ...queryResult.data, outcomes } };
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { Button } from "@kleros/ui-components-library";
 import clsx from "clsx";
@@ -24,6 +24,7 @@ import ExportPredictions from "./components/ParticipateSection/CsvUpload/ExportP
 import PredictAll from "./components/PredictAll";
 import RiskPricing from "./components/RiskPricing";
 import MarketEstimateRisk from "./components/RiskPricing/MarketEstimateRisk";
+import { Address } from "viem";
 
 export default function Home() {
   const { data, isLoading } = useMarketData();
@@ -31,14 +32,17 @@ export default function Home() {
   const resetRiskPredictions = useRiskPredictionStore(
     (state) => state.resetRiskPredictions,
   );
-  const hasPredictions = Object.entries(predictions).some(
-    ([predictionOutcomeId, prediction]) => {
-      const marketProbability = data?.outcomes?.find(
-        (outcome) => outcome.outcomeId === predictionOutcomeId,
-      )?.probability;
-      return prediction && prediction !== marketProbability;
-    },
-  );
+  const hasPredictions = useMemo(() => {
+    const outcomeMap = new Map(
+      (data?.outcomes ?? []).map((o) => [o.outcomeId, o.probability]),
+    );
+    return Object.entries(predictions).some(
+      ([predictionOutcomeId, prediction]) => {
+        const marketProbability = outcomeMap.get(predictionOutcomeId as Address);
+        return prediction && prediction !== marketProbability;
+      },
+    );
+  }, [predictions, data?.outcomes]);
 
   const [isOpen, toggleGuide] = useToggle(false);
   const [isOnboardingDone, setOnboardingDone] = useLocalStorage<boolean>(
