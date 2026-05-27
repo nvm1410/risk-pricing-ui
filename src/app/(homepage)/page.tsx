@@ -5,6 +5,7 @@ import { useEffect, useMemo } from "react";
 import { Button } from "@kleros/ui-components-library";
 import clsx from "clsx";
 import { useLocalStorage, useToggle } from "react-use";
+import { Address } from "viem";
 
 import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
@@ -24,7 +25,6 @@ import ExportPredictions from "./components/ParticipateSection/CsvUpload/ExportP
 import PredictAll from "./components/PredictAll";
 import RiskPricing from "./components/RiskPricing";
 import MarketEstimateRisk from "./components/RiskPricing/MarketEstimateRisk";
-import { Address } from "viem";
 
 export default function Home() {
   const { data, isLoading } = useMarketData();
@@ -38,7 +38,9 @@ export default function Home() {
     );
     return Object.entries(predictions).some(
       ([predictionOutcomeId, prediction]) => {
-        const marketProbability = outcomeMap.get(predictionOutcomeId as Address);
+        const marketProbability = outcomeMap.get(
+          predictionOutcomeId as Address,
+        );
         return prediction && prediction !== marketProbability;
       },
     );

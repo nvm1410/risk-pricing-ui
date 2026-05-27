@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo } from "react";
+
 import { useQuery } from "@tanstack/react-query";
 import { Address } from "viem";
 import { gnosis } from "viem/chains";
@@ -90,7 +91,10 @@ export const useMarketData = () => {
             const [price0, price1] = sqrtPriceX96ToPrice(
               BigInt(latestPoolHourData.sqrtPrice),
             );
-            return isTwoStringsEqual(outcomeId, latestPoolHourData.pool.token0.id)
+            return isTwoStringsEqual(
+              outcomeId,
+              latestPoolHourData.pool.token0.id,
+            )
               ? Number(price0)
               : Number(price1);
           })
@@ -117,7 +121,8 @@ export const useMarketData = () => {
               probability: probabilities?.[index] ?? 0,
               collateral: marketData.collateralToken,
               outcomeIndex: index,
-              symbol: data?.[index]?.symbol ?? outcome.slice(0, 11).toUpperCase(),
+              symbol:
+                data?.[index]?.symbol ?? outcome.slice(0, 11).toUpperCase(),
             };
           })
         : undefined,
