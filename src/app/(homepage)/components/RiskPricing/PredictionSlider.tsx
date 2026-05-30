@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { Slider } from "@kleros/ui-components-library";
 import clsx from "clsx";
@@ -178,9 +184,8 @@ const PredictionSlider = ({
 
   const zone = useMemo(
     () =>
-      zones.find(
-        (z) => marketPercent >= z.from && marketPercent <= z.to,
-      ) ?? zones[0],
+      zones.find((z) => marketPercent >= z.from && marketPercent <= z.to) ??
+      zones[0],
     [marketPercent],
   );
 
