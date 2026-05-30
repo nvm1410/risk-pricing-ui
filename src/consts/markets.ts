@@ -62,7 +62,7 @@ export const marketMetadata = {
 };
 
 export const RISK_PRICING_MARKET_ID =
-  "0xAE4DaD070f9c029718E8BC4Ba1E2d3eb0A0c5d6b";
+  "0x9E66028A8A6b8050928b541134ca4d5C8314DF5d";
 
 export const markets: Array<IMarket> = [
   {
