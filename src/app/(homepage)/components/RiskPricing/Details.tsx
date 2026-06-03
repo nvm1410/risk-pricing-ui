@@ -37,7 +37,9 @@ export default function RiskPanel({
           </h2>
         </div>
 
-        <p className="text-sm text-black/50 dark:text-white/50">Data provided by [partner name]</p>
+        <p className="text-sm text-black/50 dark:text-white/50">
+          Data provided by [partner name]
+        </p>
       </div>
 
       {/* Score Section */}

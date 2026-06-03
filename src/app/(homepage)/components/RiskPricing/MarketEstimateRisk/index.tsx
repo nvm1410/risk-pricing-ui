@@ -78,9 +78,7 @@ export default function MarketEstimateRisk({
         <button
           onClick={() =>
             setVisibleAssets(
-              visibleAssets.length === 0
-                ? assets.map((a) => a.symbol)
-                : [],
+              visibleAssets.length === 0 ? assets.map((a) => a.symbol) : [],
             )
           }
           className="cursor-pointer rounded-full border border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-neutral-500 transition hover:bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"

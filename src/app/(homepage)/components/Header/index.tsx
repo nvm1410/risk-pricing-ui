@@ -5,9 +5,9 @@ import Image from "next/image";
 
 import SeerLogo from "@/components/SeerLogo";
 
+import HelpIcon from "@/assets/menu-icons/help.svg";
 import SeerHeaderBackground from "@/assets/png/seer-header-bg.png";
 import ChartBar from "@/assets/svg/chart-bar.svg";
-import HelpIcon from "@/assets/menu-icons/help.svg";
 
 import { endTime, marketMetadata } from "@/consts/markets";
 
@@ -16,12 +16,12 @@ import Countdown from "./Countdown";
 const defaultDefinition = (
   <>
     Default according to Risk Pricing definition includes:
-    <br />
-    • <span className="font-bold">Redemption Failure:</span> inability to redeem the asset at expected value for 2 weeks
-    <br />
-    • <span className="font-bold">Reserve Insolvency:</span> reserves fall 1% below issuance value for 7+ days
-    <br />
-    • <span className="font-bold">Other structural failures</span> relevant to token mechanics (wrapped assets, LSTs, fiat-backed stablecoins)
+    <br />• <span className="font-bold">Redemption Failure:</span> inability to
+    redeem the asset at expected value for 2 weeks
+    <br />• <span className="font-bold">Reserve Insolvency:</span> reserves fall
+    1% below issuance value for 7+ days
+    <br />• <span className="font-bold">Other structural failures</span>{" "}
+    relevant to token mechanics (wrapped assets, LSTs, fiat-backed stablecoins)
   </>
 ) as unknown as string;
 
