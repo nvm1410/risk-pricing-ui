@@ -58,7 +58,7 @@ export interface IMarket {
 export const marketMetadata = {
   name: "Risk Pricing Predictions",
   question:
-    "What is the probability of the following protocols being exploited >$10M before 2027?",
+    "What is the Probability of Default (PD) for the following DeFi assets before 2027?",
 };
 
 export const RISK_PRICING_MARKET_ID =

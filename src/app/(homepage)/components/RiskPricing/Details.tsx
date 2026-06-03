@@ -10,9 +10,9 @@ export default function RiskPanel({
   outcome: RiskPricingOutcome;
 }) {
   return (
-    <div className="w-full max-w-[1080px] rounded-[20px] border border-black/10 bg-white text-black">
+    <div className="w-full max-w-[1080px] rounded-[20px] border border-black/10 bg-white text-black dark:border-white/10 dark:bg-neutral-900 dark:text-white">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-black/10 px-6 py-5">
+      <div className="flex items-center justify-between border-b border-black/10 px-6 py-5 dark:border-white/10">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ff7b7b]">
             <svg
@@ -37,13 +37,13 @@ export default function RiskPanel({
           </h2>
         </div>
 
-        <p className="text-sm text-black/50">Data provided by [partner name]</p>
+        <p className="text-sm text-black/50 dark:text-white/50">Data provided by [partner name]</p>
       </div>
 
       {/* Score Section */}
-      <div className="border-b border-black/10 px-6 py-5">
+      <div className="border-b border-black/10 px-6 py-5 dark:border-white/10">
         <div className="flex items-center gap-5">
-          <div className="flex h-[80px] w-[80px] items-center justify-center rounded-[8px] bg-[#d5f4d7] text-[32px] font-semibold text-[#2d4d31]">
+          <div className="flex h-[80px] w-[80px] items-center justify-center rounded-[8px] bg-[#d5f4d7] text-[32px] font-semibold text-[#2d4d31] dark:bg-[#1a3d1f] dark:text-[#8fdca0]">
             AA+
           </div>
 
@@ -52,7 +52,7 @@ export default function RiskPanel({
               Low Risk
             </div>
 
-            <div className="mt-2 text-[15px] text-black/50">
+            <div className="mt-2 text-[15px] text-black/50 dark:text-white/50">
               [Partner name] score
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function RiskPanel({
       </div>
 
       {/* Metrics */}
-      <div className="border-b border-black/10 px-6 py-5">
+      <div className="border-b border-black/10 px-6 py-5 dark:border-white/10">
         <div className="grid grid-cols-6 gap-6">
           {[
             {
@@ -103,7 +103,7 @@ export default function RiskPanel({
                     {item.title}
                   </div>
 
-                  <div className="mt-1 text-[13px] leading-snug text-black/50">
+                  <div className="mt-1 text-[13px] leading-snug text-black/50 dark:text-white/50">
                     {item.subtitle}
                   </div>
                 </div>
@@ -115,13 +115,13 @@ export default function RiskPanel({
 
       {/* Consensus PD */}
       <div className="px-6 py-5">
-        <div className="flex items-center gap-3 rounded-[8px] bg-[#d8f4d8] px-5 py-3 text-[#29482d]">
+        <div className="flex items-center gap-3 rounded-[8px] bg-[#d8f4d8] px-5 py-3 text-[#29482d] dark:bg-[#1a3d1f] dark:text-[#8fdca0]">
           <span className="text-[24px]">🗠</span>
 
           <div className="flex items-baseline gap-2">
             <span className="text-[20px] font-semibold">0.27%</span>
 
-            <span className="text-[14px] text-[#29482d]/70">
+            <span className="text-[14px] text-[#29482d]/70 dark:text-[#8fdca0]/70">
               Consensus PD (Ann.)
             </span>
           </div>
@@ -130,7 +130,7 @@ export default function RiskPanel({
 
       {/* Footer */}
       <div className="px-6 pb-6">
-        <div className="flex items-center gap-8 rounded-[6px] bg-[#f3f3f3] px-6 py-5 text-black">
+        <div className="flex items-center gap-8 rounded-[6px] bg-[#f3f3f3] px-6 py-5 text-black dark:bg-neutral-800 dark:text-white">
           <button className="flex items-center gap-2 text-[16px] font-medium text-[#1570ef] transition-opacity hover:opacity-80">
             <span>View on [partner name]</span>
 
@@ -157,12 +157,12 @@ export default function RiskPanel({
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-[16px] font-medium text-[#3b3b3b]">
+              <span className="text-[16px] font-medium text-[#3b3b3b] dark:text-neutral-300">
                 Gnosis Contract
               </span>
 
               <a
-                className="text-[14px] text-[#9c9c9c]"
+                className="text-[14px] text-[#9c9c9c] dark:text-neutral-500"
                 href={`${BLOCK_EXPLORER_URLS[gnosis.id]}/address/${outcome.outcomeId}`}
                 target="_blank"
                 rel="noreferrer noopener"

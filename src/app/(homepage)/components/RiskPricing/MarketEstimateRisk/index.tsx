@@ -48,7 +48,7 @@ export default function MarketEstimateRisk({
   return (
     <>
       {/* Pills */}
-      <div className="flex flex-wrap gap-2 p-6">
+      <div className="flex flex-wrap gap-2">
         {assets.map((asset, index) => {
           const assetColor = assetColors[index % assetColors.length];
           const active = visibleAssets.includes(asset.symbol);
@@ -57,10 +57,10 @@ export default function MarketEstimateRisk({
             <button
               key={asset.symbol}
               onClick={() => toggleAsset(asset.symbol)}
-              className={`cursor-pointer rounded-full border px-3 py-1.5 text-sm font-medium transition hover:bg-neutral-100 ${
+              className={`cursor-pointer rounded-full border px-2 py-1 text-xs font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
                 active
                   ? "border-transparent text-white"
-                  : "border-neutral-300 bg-white text-neutral-500"
+                  : "border-neutral-300 bg-white text-neutral-500 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-400"
               }`}
               style={
                 active
@@ -76,29 +76,38 @@ export default function MarketEstimateRisk({
         })}
 
         <button
-          onClick={() => setVisibleAssets([])}
-          className="cursor-pointer rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-sm font-medium text-neutral-500 transition hover:bg-neutral-100"
+          onClick={() =>
+            setVisibleAssets(
+              visibleAssets.length === 0
+                ? assets.map((a) => a.symbol)
+                : [],
+            )
+          }
+          className="cursor-pointer rounded-full border border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-neutral-500 transition hover:bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
         >
-          Clear all
+          {visibleAssets.length === 0 ? "Select all" : "Clear all"}
         </button>
       </div>
 
       {/* Chart */}
       <div className="w-full">
-        <h2 className="mb-8 text-2xl font-semibold text-[#333333]">
+        <h2 className="text-klerosUIComponentsPrimaryText mb-8 text-2xl font-semibold">
           Market Estimate Risk
         </h2>
 
         <div className="relative">
           {/* Grid lines */}
           <div className="pointer-events-none absolute inset-0">
-            {zoneAxis.map((value) => (
+            {zoneAxis.map((value, index) => (
               <div
                 key={value}
                 className="absolute top-0 border-l border-dashed border-neutral-300"
                 style={{
-                  left: `${scaledPercent(value)}%`,
-                  height: "calc(100% - 120px)",
+                  left:
+                    index === zoneAxis.length - 1
+                      ? `calc(${scaledPercent(value)}% - 1px)`
+                      : `${scaledPercent(value)}%`,
+                  height: "calc(100% - 15rem)",
                 }}
               />
             ))}
@@ -206,7 +215,7 @@ export default function MarketEstimateRisk({
                       }}
                     >
                       {/* Emoji */}
-                      <div className="absolute -top-5 z-20 rounded-full border-[4px] border-white bg-white text-3xl">
+                      <div className="absolute -top-5 z-20 rounded-full border-[4px] border-white bg-white text-3xl dark:border-neutral-900 dark:bg-neutral-900">
                         {zone.emoji}
                       </div>
 
@@ -221,7 +230,7 @@ export default function MarketEstimateRisk({
             </div>
 
             {/* Axis */}
-            <div className="relative mt-3 h-5 text-sm text-neutral-600">
+            <div className="relative mt-3 h-5 text-sm text-neutral-500 dark:text-neutral-400">
               {zoneAxis.map((value) => (
                 <div
                   key={value}
@@ -236,14 +245,14 @@ export default function MarketEstimateRisk({
             </div>
           </div>
           {noToAllProbability !== undefined && (
-            <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium text-emerald-700">
+                  <div className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
                     NO TO ALL
                   </div>
 
-                  <div className="mt-1 text-xs text-emerald-600">
+                  <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-500">
                     Chance that no listed asset defaults
                   </div>
                 </div>
@@ -251,7 +260,7 @@ export default function MarketEstimateRisk({
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">🛡️</span>
 
-                  <span className="text-2xl font-bold text-emerald-700">
+                  <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
                     {noToAllProbability}%
                   </span>
                 </div>
