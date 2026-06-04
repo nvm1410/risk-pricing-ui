@@ -1,6 +1,11 @@
-import { gnosis } from "viem/chains";
+import { Tooltip } from "@kleros/ui-components-library";
+import { mainnet } from "viem/chains";
 
 import { RiskPricingOutcome } from "@/hooks/useMarketData";
+
+import HelpIcon from "@/assets/menu-icons/help.svg";
+
+import { RiskAssetDetailsMapping, RiskProfileIcon } from "@/consts/markets";
 
 import { BLOCK_EXPLORER_URLS } from "./constants";
 
@@ -9,6 +14,8 @@ export default function RiskPanel({
 }: {
   outcome: RiskPricingOutcome;
 }) {
+  const riskData = RiskAssetDetailsMapping[outcome.outcome.toLowerCase()];
+  if (!riskData) return <p>No data for this asset</p>;
   return (
     <div className="w-full max-w-[1080px] rounded-[20px] border border-black/10 bg-white text-black dark:border-white/10 dark:bg-neutral-900 dark:text-white">
       {/* Header */}
@@ -38,7 +45,7 @@ export default function RiskPanel({
         </div>
 
         <p className="text-sm text-black/50 dark:text-white/50">
-          Data provided by [partner name]
+          Data provided by Credora
         </p>
       </div>
 
@@ -46,16 +53,16 @@ export default function RiskPanel({
       <div className="border-b border-black/10 px-6 py-5 dark:border-white/10">
         <div className="flex items-center gap-5">
           <div className="flex h-[80px] w-[80px] items-center justify-center rounded-[8px] bg-[#d5f4d7] text-[32px] font-semibold text-[#2d4d31] dark:bg-[#1a3d1f] dark:text-[#8fdca0]">
-            AA+
+            {riskData.metrics_rating}
           </div>
 
           <div>
             <div className="text-[24px] leading-none font-semibold">
-              Low Risk
+              {riskData.rating_type}
             </div>
 
             <div className="mt-2 text-[15px] text-black/50 dark:text-white/50">
-              [Partner name] score
+              {riskData.avg_risk_score}
             </div>
           </div>
         </div>
@@ -64,54 +71,34 @@ export default function RiskPanel({
       {/* Metrics */}
       <div className="border-b border-black/10 px-6 py-5 dark:border-white/10">
         <div className="grid grid-cols-6 gap-6">
-          {[
-            {
-              icon: "💧",
-              title: "Strong",
-              subtitle: "Liquidity Health",
-            },
-            {
-              icon: "🏗️",
-              title: "Moderate",
-              subtitle: "Leverage",
-            },
-            {
-              icon: "🪙",
-              title: "Stablecoin",
-              subtitle: "Asset Type",
-            },
-            {
-              icon: "📈",
-              title: "Very Strong",
-              subtitle: "Growth Potential",
-            },
-            {
-              icon: "📉",
-              title: "Critical",
-              subtitle: "Debt Levels",
-            },
-            {
-              icon: "💼",
-              title: "Balanced",
-              subtitle: "Asset Allocation",
-            },
-          ].map((item) => (
-            <div key={item.title} className="min-w-0">
-              <div className="flex items-start gap-2">
-                <span className="mt-[1px] text-[15px]">{item.icon}</span>
+          {riskData.risk_profiles.map((item, index) => {
+            const Icon = RiskProfileIcon[index];
+            return (
+              <div key={item.metric_name} className="min-w-0">
+                <div className="flex items-start gap-2">
+                  <Icon width={16} height={16} className="shrink-0" />
 
-                <div>
-                  <div className="text-[18px] leading-none font-medium">
-                    {item.title}
-                  </div>
+                  <div>
+                    <div className="text-[18px] leading-none font-medium">
+                      {item.score ?? "-"}/{item.max_score}
+                      <Tooltip
+                        text={item.content}
+                        place="bottom"
+                        wrapperProps={{ className: "inline-flex items-center" }}
+                        className="max-w-94 [&>small]:text-sm"
+                      >
+                        <HelpIcon className="ml-1 inline-block size-3.5" />
+                      </Tooltip>
+                    </div>
 
-                  <div className="mt-1 text-[13px] leading-snug text-black/50 dark:text-white/50">
-                    {item.subtitle}
+                    <div className="mt-1 text-[13px] leading-snug text-black/50 dark:text-white/50">
+                      {item.metric_name}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -121,7 +108,9 @@ export default function RiskPanel({
           <span className="text-[24px]">🗠</span>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-[20px] font-semibold">0.27%</span>
+            <span className="text-[20px] font-semibold">
+              {Number(outcome.probability * 100).toFixed(2)}%
+            </span>
 
             <span className="text-[14px] text-[#29482d]/70 dark:text-[#8fdca0]/70">
               Consensus PD (Ann.)
@@ -134,7 +123,13 @@ export default function RiskPanel({
       <div className="px-6 pb-6">
         <div className="flex items-center gap-8 rounded-[6px] bg-[#f3f3f3] px-6 py-5 text-black dark:bg-neutral-800 dark:text-white">
           <button className="flex items-center gap-2 text-[16px] font-medium text-[#1570ef] transition-opacity hover:opacity-80">
-            <span>View on [partner name]</span>
+            <a
+              href={`https://app.credora.network/assets/${outcome.outcome.toLowerCase()}`}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              View on Credora
+            </a>
 
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path
@@ -160,16 +155,16 @@ export default function RiskPanel({
 
             <div className="flex items-center gap-4">
               <span className="text-[16px] font-medium text-[#3b3b3b] dark:text-neutral-300">
-                Gnosis Contract
+                Ethereum Contract
               </span>
 
               <a
                 className="text-[14px] text-[#9c9c9c] dark:text-neutral-500"
-                href={`${BLOCK_EXPLORER_URLS[gnosis.id]}/address/${outcome.outcomeId}`}
+                href={`${BLOCK_EXPLORER_URLS[mainnet.id]}/address/${riskData.address}`}
                 target="_blank"
                 rel="noreferrer noopener"
               >
-                {outcome.outcomeId}
+                {riskData.address}
               </a>
             </div>
           </div>

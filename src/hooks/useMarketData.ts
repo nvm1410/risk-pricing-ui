@@ -90,6 +90,8 @@ export const useMarketData = () => {
             if (!latestPoolHourData) return 0;
             const [price0, price1] = sqrtPriceX96ToPrice(
               BigInt(latestPoolHourData.sqrtPrice),
+              undefined,
+              true,
             );
             return isTwoStringsEqual(
               outcomeId,
