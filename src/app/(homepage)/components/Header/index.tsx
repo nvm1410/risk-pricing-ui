@@ -1,6 +1,5 @@
 import { Tooltip } from "@kleros/ui-components-library";
 import clsx from "clsx";
-import { format } from "date-fns";
 import Image from "next/image";
 
 import SeerLogo from "@/components/SeerLogo";
@@ -38,7 +37,15 @@ const Header: React.FC = () => {
             Trading Period:
           </span>
           <span className="text-klerosUIComponentsPrimaryText text-sm font-semibold">
-            Until {format(endTime, "EEEE do MMMM HH:mm 'UTC'")}
+            Until{" "}
+            {new Date(endTime * 1000).toLocaleString("en-GB", {
+              timeZone: "UTC",
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+            }) + " UTC"}
           </span>
         </div>
         <Countdown />
