@@ -5,11 +5,11 @@ import { useAccount, useDisconnect } from "wagmi";
 
 import ConnectWallet from "@/components/ConnectWallet";
 import { CopiableAddressDisplay } from "@/components/ConnectWallet/AccountDetails";
-import EmailUpdates from "@/components/EmailUpdates";
 import {
   ChainDisplay,
   IdenticonOrAvatar,
 } from "@/components/ConnectWallet/AccountDisplay";
+import EmailUpdates from "@/components/EmailUpdates";
 import LightButton from "@/components/LightButton";
 import QuickGuideButton from "@/components/QuickGuideButton";
 import ThemeToggle from "@/components/ThemeToggle";

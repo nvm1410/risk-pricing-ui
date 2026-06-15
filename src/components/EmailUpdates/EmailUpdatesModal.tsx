@@ -45,7 +45,9 @@ const EmailUpdatesModal: React.FC<IEmailUpdatesModal> = ({
     EMAIL_REGEX.test(email) && email.length <= MAX_EMAIL_LENGTH;
 
   const isMutating =
-    subscribe.isPending || unsubscribe.isPending || resendVerification.isPending;
+    subscribe.isPending ||
+    unsubscribe.isPending ||
+    resendVerification.isPending;
 
   const handleSubscribe = async () => {
     await subscribe.mutateAsync({

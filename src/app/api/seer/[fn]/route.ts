@@ -37,7 +37,10 @@ async function proxy(req: NextRequest, fn: string) {
       },
     });
   } catch {
-    return NextResponse.json({ error: "Upstream unavailable" }, { status: 502 });
+    return NextResponse.json(
+      { error: "Upstream unavailable" },
+      { status: 502 },
+    );
   }
 }
 

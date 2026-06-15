@@ -55,7 +55,8 @@ export const RedeemRiskInterface: React.FC<RedeemRiskInterfaceProps> = ({
         balance: balances[index] ?? 0n,
       }))
       .filter(
-        ({ balance, index }) => balance > 0n && (payoutFractions[index] ?? 0) > 0,
+        ({ balance, index }) =>
+          balance > 0n && (payoutFractions[index] ?? 0) > 0,
       );
   }, [wrappedTokens, balances, payoutFractions]);
 
