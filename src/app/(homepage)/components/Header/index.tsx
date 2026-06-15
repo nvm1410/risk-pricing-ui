@@ -2,13 +2,21 @@ import { Tooltip } from "@kleros/ui-components-library";
 import clsx from "clsx";
 import Image from "next/image";
 
+import { useRawMarketData } from "@/hooks/useMarketData";
+import { useRiskMarketResolution } from "@/hooks/useRiskMarketResolution";
+
 import SeerLogo from "@/components/SeerLogo";
 
 import HelpIcon from "@/assets/menu-icons/help.svg";
 import SeerHeaderBackground from "@/assets/png/seer-header-bg.png";
 import ChartBar from "@/assets/svg/chart-bar.svg";
 
+import { cn } from "@/utils";
+import { getReadableTextColor } from "@/utils/getReadableTextColor";
+
 import { endTime, marketMetadata } from "@/consts/markets";
+
+import { assetColors } from "../RiskPricing/constants";
 
 import Countdown from "./Countdown";
 
@@ -25,6 +33,24 @@ const defaultDefinition = (
 ) as unknown as string;
 
 const Header: React.FC = () => {
+  const { data } = useRawMarketData();
+  const {
+    isResolved,
+    payoutFractions,
+    isLoading: isLoadingResolution,
+  } = useRiskMarketResolution();
+
+  const winningOutcomes =
+    isResolved && payoutFractions
+      ? (data?.marketData?.outcomes ?? [])
+          .map((outcome, index) => ({
+            outcome,
+            index,
+            payoutFraction: payoutFractions[index] ?? 0,
+          }))
+          .filter(({ payoutFraction }) => payoutFraction > 0)
+      : [];
+
   return (
     <div className="flex flex-col items-start gap-4">
       <h1 className="text-klerosUIComponentsPrimaryText text-2xl font-semibold">
@@ -86,6 +112,42 @@ const Header: React.FC = () => {
           protocols.
         </p>
       </div>
+      {!isLoadingResolution && winningOutcomes.length > 0 ? (
+        <div className="border-b-klerosUIComponentsStroke w-full space-y-2 border-b pb-8">
+          <h2 className="text-klerosUIComponentsPrimaryText text-base font-semibold">
+            Market resolved:
+          </h2>
+          <div className="flex flex-row flex-wrap items-center gap-2">
+            {winningOutcomes.map(({ outcome, index, payoutFraction }) => {
+              const color = assetColors[index % assetColors.length];
+              return (
+                <div
+                  className={cn(
+                    "rounded-base h-fit px-1 py-0.5",
+                    "flex flex-row gap-2",
+                  )}
+                  key={index}
+                  style={{ backgroundColor: color }}
+                >
+                  <p
+                    className="text-xs"
+                    style={{ color: getReadableTextColor(color) }}
+                  >
+                    {outcome}
+                    <span
+                      className="mx-1 text-xs"
+                      style={{ color: getReadableTextColor(color) }}
+                    >
+                      |
+                    </span>
+                    {Number((payoutFraction * 100).toFixed(2))}%
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

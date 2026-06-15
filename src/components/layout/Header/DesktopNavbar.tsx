@@ -1,4 +1,5 @@
 import ConnectWallet from "@/components/ConnectWallet";
+import EmailUpdates from "@/components/EmailUpdates";
 import LightButton from "@/components/LightButton";
 import QuickGuideButton from "@/components/QuickGuideButton";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -22,6 +23,7 @@ const DesktopNavbar: React.FC<IDesktopNavbar> = ({ toggleIsHelpOpen }) => {
         <GnosisIcon className="mx-2.5 size-6" />
         <ConnectWallet />
         <div className="flex items-center">
+          <EmailUpdates />
           <LightButton
             text=""
             onPress={toggleIsHelpOpen}

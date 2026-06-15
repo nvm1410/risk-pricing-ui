@@ -5,6 +5,7 @@ import { useAccount, useDisconnect } from "wagmi";
 
 import ConnectWallet from "@/components/ConnectWallet";
 import { CopiableAddressDisplay } from "@/components/ConnectWallet/AccountDetails";
+import EmailUpdates from "@/components/EmailUpdates";
 import {
   ChainDisplay,
   IdenticonOrAvatar,
@@ -88,6 +89,7 @@ const MobileNavbar: React.FC<IMobileNavbar> = ({ toggleIsHelpOpen }) => {
             icon={<HelpIcon className={clsx("size-4")} />}
             onPress={toggleIsHelpOpen}
           />
+          <EmailUpdates withText />
           <ThemeToggle withText />
         </div>
       </Modal>

@@ -10,6 +10,7 @@ import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 import { useTradeWallet } from "@/context/TradeWalletContext";
 import { RiskPricingOutcome } from "@/hooks/useMarketData";
+import { useRiskMarketResolution } from "@/hooks/useRiskMarketResolution";
 import { useRiskTokenPositionValue } from "@/hooks/useRiskTokenPositionValue";
 
 import CheckOutline from "@/assets/svg/check-outline-button.svg";
@@ -44,11 +45,16 @@ const RiskPricing = ({
   });
   const { tradeExecutor } = useTradeWallet();
 
+  const { isResolved, payoutFractions } = useRiskMarketResolution();
+  const effectivePrice = isResolved
+    ? (payoutFractions?.[outcomeIndex] ?? 0)
+    : price;
+
   const { value } = useRiskTokenPositionValue(
     outcomeId,
     collateral,
     tradeExecutor ?? "0x",
-    price,
+    effectivePrice,
   );
   return (
     <CustomAccordion

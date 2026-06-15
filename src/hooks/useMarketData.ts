@@ -70,8 +70,12 @@ export interface RiskPricingOutcome {
   outcomeIndex: number;
   symbol: string;
 }
-export const useMarketData = () => {
-  const queryResult = useQuery<{
+/**
+ * Raw market data query, without the implied-probabilities computation
+ * of useMarketData. Shares the same react-query cache entry.
+ */
+export const useRawMarketData = () => {
+  return useQuery<{
     marketData: Market;
     chartData: PoolHourData[][];
     outcomes: RiskPricingOutcome[] | undefined;
@@ -79,6 +83,10 @@ export const useMarketData = () => {
     queryKey: ["useMarketData"],
     queryFn: () => fetchMarket(),
   });
+};
+
+export const useMarketData = () => {
+  const queryResult = useRawMarketData();
   const marketData = queryResult.data?.marketData;
   const chartData = queryResult.data?.chartData;
   const prices = useMemo(

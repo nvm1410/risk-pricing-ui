@@ -5,6 +5,7 @@ import { useToggle } from "react-use";
 import { useAccount } from "wagmi";
 
 import { useTradeWallet } from "@/context/TradeWalletContext";
+import { useRiskMarketResolution } from "@/hooks/useRiskMarketResolution";
 import { useTokenBalance } from "@/hooks/useTokenBalance";
 
 import WithHelpTooltip from "@/components/WithHelpTooltip";
@@ -20,7 +21,7 @@ import { DepositInterface } from "./DepositInterface";
 import MergeInterface from "./MergeInterface";
 import MintInterface from "./MintInterface";
 import ProjectBalances from "./ProjectBalances";
-import { RedeemParentsInterface } from "./RedeemInterface";
+import { RedeemRiskInterface } from "./RedeemRiskInterface";
 import TradeWalletSkeleton from "./TradeWalletSkeleton";
 import { WithdrawInterface } from "./WithdrawInterface";
 
@@ -41,15 +42,7 @@ export const TradeWallet = () => {
 
   const blockExplorerUrl = chain?.blockExplorers?.default?.url;
 
-  // const { data: parentWinningOutcomes } =
-  //   useGetWinningOutcomes(parentConditionId);
-  // const isParentResolved = useMemo(
-  //   () =>
-  //     isUndefined(parentWinningOutcomes)
-  //       ? false
-  //       : parentWinningOutcomes.some((val) => val === true),
-  //   [parentWinningOutcomes],
-  // );
+  const { isResolved } = useRiskMarketResolution();
 
   return (
     <>
@@ -107,14 +100,14 @@ export const TradeWallet = () => {
                   onPress={toggleIsWithdrawOpen}
                 />
 
-                {/* {isParentResolved ? (
+                {isResolved ? (
                   <Button
-                    onClick={() => toggleIsRedeemOpen()}
+                    onPress={toggleIsRedeemOpen}
                     variant="secondary"
                     small
                     text="Redeem outcome tokens"
                   />
-                ) : null} */}
+                ) : null}
                 <DropdownSelect
                   simpleButton
                   placeholder="Advanced Options"
@@ -183,7 +176,7 @@ export const TradeWallet = () => {
         />
       ) : null}
       {isRedeemOpen ? (
-        <RedeemParentsInterface
+        <RedeemRiskInterface
           {...{
             isOpen: isRedeemOpen,
             toggleIsOpen: toggleIsRedeemOpen,

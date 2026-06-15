@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Address } from "viem";
 
 import { RiskPricingOutcome } from "@/hooks/useMarketData";
+import { useRiskMarketResolution } from "@/hooks/useRiskMarketResolution";
 import { useRiskTokenPositionValue } from "@/hooks/useRiskTokenPositionValue";
 
 import InfoIcon from "@/assets/svg/info.svg";
@@ -13,8 +14,6 @@ import InfoIcon from "@/assets/svg/info.svg";
 import { formatValue, isUndefined } from "@/utils";
 
 import { advancedUserGuide } from "@/consts/markets";
-
-import RedeemButton from "./RedeemButton";
 
 interface IPositionValue {
   outcome: RiskPricingOutcome;
@@ -25,8 +24,19 @@ const PositionValue: React.FC<IPositionValue> = ({
   outcome,
   tradeExecutor,
 }) => {
-  const { outcomeId, collateral, price: marketPrice, symbol } = outcome;
-  const isResolved = false;
+  const {
+    outcomeId,
+    collateral,
+    price: marketPrice,
+    symbol,
+    outcomeIndex,
+  } = outcome;
+  const { isResolved, payoutFractions } = useRiskMarketResolution();
+  // once resolved, the redeemable value per token is the reported payout
+  // fraction, not the (stale) pool price
+  const effectivePrice = isResolved
+    ? (payoutFractions?.[outcomeIndex] ?? 0)
+    : marketPrice;
   const {
     value: totalValue,
     balance,
@@ -35,7 +45,7 @@ const PositionValue: React.FC<IPositionValue> = ({
     outcomeId,
     collateral,
     tradeExecutor ?? "0x",
-    marketPrice,
+    effectivePrice,
   );
 
   const displayTotal = useMemo(() => {
@@ -49,7 +59,7 @@ const PositionValue: React.FC<IPositionValue> = ({
     return "0";
   }, [totalValue]);
 
-  if (displayTotal === "0" || marketPrice === 0) {
+  if (displayTotal === "0" || (marketPrice === 0 && !isResolved)) {
     return null;
   }
 
@@ -109,7 +119,12 @@ const PositionValue: React.FC<IPositionValue> = ({
           </Link>
         </Tooltip>
       </div>
-      {isResolved ? <RedeemButton tradeExecutor={tradeExecutor!} /> : null}
+      {isResolved ? (
+        <p className="text-klerosUIComponentsSecondaryText text-xs">
+          Use &quot;Redeem outcome tokens&quot; in the Trade Wallet above to
+          redeem your position.
+        </p>
+      ) : null}
     </div>
   );
 };
