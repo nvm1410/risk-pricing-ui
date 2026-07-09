@@ -32,6 +32,17 @@ function buildPrefixSuffix(p: number[]) {
   return { prefix, suffix };
 }
 
+// The market trades on quarterly-implied prices, but users predict/see yearly
+// PD. Convert assuming a constant quarterly hazard rate: (1 - yearlyPD) =
+// (1 - quarterlyPD) ^ 4.
+export function yearlyToQuarterly(yearlyPD: number): number {
+  return 1 - (1 - yearlyPD) ** (1 / 4);
+}
+
+export function quarterlyToYearly(quarterlyPD: number): number {
+  return 1 - (1 - quarterlyPD) ** 4;
+}
+
 export function computePrices(p: number[]) {
   const n = p.length;
   let priceY = 1;

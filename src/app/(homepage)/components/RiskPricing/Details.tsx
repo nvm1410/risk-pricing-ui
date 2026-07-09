@@ -1,6 +1,7 @@
 import { Tooltip } from "@kleros/ui-components-library";
 import { mainnet } from "viem/chains";
 
+import { useCredoraAssets } from "@/hooks/useCredoraAssets";
 import { RiskPricingOutcome } from "@/hooks/useMarketData";
 
 import HelpIcon from "@/assets/menu-icons/help.svg";
@@ -14,7 +15,11 @@ export default function RiskPanel({
 }: {
   outcome: RiskPricingOutcome;
 }) {
-  const riskData = RiskAssetDetailsMapping[outcome.outcome.toLowerCase()];
+  const key = outcome.outcome.toLowerCase();
+  const fallback = RiskAssetDetailsMapping[key];
+  const address = fallback?.address?.toLowerCase();
+  const { data } = useCredoraAssets();
+  const riskData = (address ? data?.[address] : undefined) ?? fallback;
   if (!riskData) return <p>No data for this asset</p>;
   return (
     <div className="w-full max-w-[1080px] rounded-[20px] border border-black/10 bg-white text-black dark:border-white/10 dark:bg-neutral-900 dark:text-white">
@@ -124,7 +129,7 @@ export default function RiskPanel({
         <div className="flex items-center gap-8 rounded-[6px] bg-[#f3f3f3] px-6 py-5 text-black dark:bg-neutral-800 dark:text-white">
           <button className="flex items-center gap-2 text-[16px] font-medium text-[#1570ef] transition-opacity hover:opacity-80">
             <a
-              href={`https://app.credora.network/assets/${outcome.outcome.toLowerCase()}`}
+              href={`https://app.credora.network/assets/${key}`}
               target="_blank"
               rel="noreferrer noopener"
             >

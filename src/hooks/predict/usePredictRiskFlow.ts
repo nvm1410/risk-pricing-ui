@@ -19,7 +19,7 @@ import { processRiskMarket } from "@/utils/processRiskMarket";
 import { collateral } from "@/consts";
 
 import { useTradeExecutorPredictRiskOutcomes } from "../tradeWallet/useTradeExecutorPredictRiskOutcomes";
-import { computePrices } from "../useImpliedProbs";
+import { computePrices, yearlyToQuarterly } from "../useImpliedProbs";
 
 import { usePredictState } from "./usePredictState";
 
@@ -67,12 +67,15 @@ export function usePredictRiskFlow({
 
   const predictions = useRiskPredictionStore((state) => state.riskPredictions);
   const outcomes = useRiskPredictionStore((state) => state.outcomes);
+  // predictions/outcome.probability are yearly PD; the pools trade on
+  // quarterly-implied prices, so convert before pricing the trade.
   const predictedProbs = outcomes
     .slice(0, -1)
     .map(
       (outcome) => predictions[outcome.outcomeId] ?? outcome.probability ?? 0,
     );
-  const { priceY, prices } = computePrices(predictedProbs);
+  const quarterlyPredictedProbs = predictedProbs.map(yearlyToQuarterly);
+  const { priceY, prices } = computePrices(quarterlyPredictedProbs);
   // prices for asset + no to all price (last outcome)
   const predictedPrices = [...prices, priceY];
   const createTradeExecutor = useCreateTradeExecutor();

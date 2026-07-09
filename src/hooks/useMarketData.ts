@@ -12,7 +12,11 @@ import { RISK_PRICING_MARKET_ID } from "@/consts/markets";
 
 import { isTwoStringsEqual, sqrtPriceX96ToPrice } from "./liquidity/utils";
 
-import { useImpliedProbsAsync } from "./useImpliedProbs";
+import {
+  computePrices,
+  quarterlyToYearly,
+  useImpliedProbsAsync,
+} from "./useImpliedProbs";
 import { useTokensInfo } from "./useTokensInfo";
 
 export function deserializeMarket(market: SerializedMarket): Market {
@@ -116,8 +120,15 @@ export const useMarketData = () => {
     prices?.slice(0, -2) ?? [],
     !!prices,
   );
-  const probabilities =
-    state.status === "done" ? [...state.probs, state.priceY, 0] : undefined;
+  // state.probs/priceY are quarterly (the pools trade on quarterly-implied
+  // prices) — convert to yearly PD for display, recomputing "No To All" from
+  // the yearly-converted per-asset probabilities so it stays self-consistent.
+  const probabilities = useMemo(() => {
+    if (state.status !== "done") return undefined;
+    const yearlyProbs = state.probs.map(quarterlyToYearly);
+    const { priceY: yearlyPriceY } = computePrices(yearlyProbs);
+    return [...yearlyProbs, yearlyPriceY, 0];
+  }, [state]);
   const { data } = useTokensInfo(marketData?.wrappedTokens, gnosis.id);
   const outcomes = useMemo(
     () =>
