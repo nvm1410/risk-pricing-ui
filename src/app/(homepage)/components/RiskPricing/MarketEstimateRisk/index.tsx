@@ -5,6 +5,7 @@ import { assetColors, zoneAxis, zones } from "../constants";
 type AssetRisk = {
   symbol: string;
   risk: number;
+  quarterlyRisk?: number;
 };
 
 type MarketEstimateRiskProps = {
@@ -93,105 +94,120 @@ export default function MarketEstimateRisk({
           Market Estimate Risk
         </h2>
 
-        <div className="relative">
-          {/* Grid lines */}
-          <div className="pointer-events-none absolute inset-0">
-            {zoneAxis.map((value, index) => (
-              <div
-                key={value}
-                className="absolute top-0 border-l border-dashed border-neutral-300"
-                style={{
-                  left:
-                    index === zoneAxis.length - 1
-                      ? `calc(${scaledPercent(value)}% - 1px)`
-                      : `${scaledPercent(value)}%`,
-                  height: "calc(100% - 15rem)",
-                }}
-              />
-            ))}
-          </div>
+        <div>
+          {/* Assets viewport: scrolls vertically so the zone axis below stays
+              in view even with many (25+) assets. */}
+          <div className="relative">
+            {/* Grid lines (offset by the left label gutter; the right gutter
+                matches the scrollbar so lines stay aligned with bars/zones) */}
+            <div className="pointer-events-none absolute top-0 right-2 bottom-0 left-32">
+              {zoneAxis.map((value, index) => (
+                <div
+                  key={value}
+                  className="absolute top-0 border-l border-dashed border-neutral-300"
+                  style={{
+                    left:
+                      index === zoneAxis.length - 1
+                        ? `calc(${scaledPercent(value)}% - 1px)`
+                        : `${scaledPercent(value)}%`,
+                    height: "100%",
+                  }}
+                />
+              ))}
+            </div>
 
-          {/* Assets */}
-          <div className="space-y-5">
-            {assets
-              .filter((asset) => visibleAssets.includes(asset.symbol))
-              .map((asset, index) => {
-                const assetColor = assetColors[index % assetColors.length];
+            {/* Assets (scrollable; a stable gutter keeps the plot width
+                constant whether or not the scrollbar is visible) */}
+            <div className="max-h-[28rem] space-y-8 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-600 [&::-webkit-scrollbar-track]:bg-transparent">
+              {assets
+                .filter((asset) => visibleAssets.includes(asset.symbol))
+                .map((asset, index) => {
+                  const assetColor = assetColors[index % assetColors.length];
 
-                /**
-                 * Track width uses LOG SCALE
-                 */
-                const widthPercent = scaledPercent(asset.risk);
+                  /**
+                   * Track width uses LOG SCALE
+                   */
+                  const widthPercent = scaledPercent(asset.risk);
 
-                /**
-                 * Gradient stops relative to the asset width
-                 */
-                const gradientStops = zones
-                  .flatMap((zone) => {
-                    if (zone.from >= asset.risk) return [];
+                  /**
+                   * Gradient stops relative to the asset width
+                   */
+                  const gradientStops = zones
+                    .flatMap((zone) => {
+                      if (zone.from >= asset.risk) return [];
 
-                    const clampedTo = Math.min(zone.to, asset.risk);
+                      const clampedTo = Math.min(zone.to, asset.risk);
 
-                    /**
-                     * IMPORTANT:
-                     * Normalize against asset risk,
-                     * not global maxRisk
-                     */
-                    const start = (scale(zone.from) / scale(asset.risk)) * 100;
+                      /**
+                       * IMPORTANT:
+                       * Normalize against asset risk,
+                       * not global maxRisk
+                       */
+                      const start =
+                        (scale(zone.from) / scale(asset.risk)) * 100;
 
-                    const end = (scale(clampedTo) / scale(asset.risk)) * 100;
+                      const end = (scale(clampedTo) / scale(asset.risk)) * 100;
 
-                    const [from, to] = zone.colors;
+                      const [from, to] = zone.colors;
 
-                    return [`${from} ${start}%`, `${to} ${end}%`];
-                  })
-                  .join(", ");
+                      return [`${from} ${start}%`, `${to} ${end}%`];
+                    })
+                    .join(", ");
 
-                return (
-                  <div key={asset.symbol} className="relative h-8">
-                    {/* Gradient track */}
-                    <div
-                      className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full"
-                      style={{
-                        width: `${widthPercent}%`,
-                        background: `linear-gradient(to right, ${gradientStops})`,
-                      }}
-                    />
+                  return (
+                    <div key={asset.symbol} className="flex h-8 items-center">
+                      {/* Asset name label (left of the chart) */}
+                      <div className="w-32 shrink-0 truncate pr-3 text-base font-semibold text-black dark:text-white">
+                        {asset.symbol}
+                      </div>
 
-                    {/* Overlay */}
-                    <div
-                      className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full opacity-70"
-                      style={{
-                        width: `${widthPercent}%`,
-                        backgroundColor: assetColor,
-                      }}
-                    />
+                      {/* Plotting area (shares its 0-100% scale with the grid
+                        lines and zone legend) */}
+                      <div className="relative h-8 flex-1">
+                        {/* Gradient track */}
+                        <div
+                          className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full"
+                          style={{
+                            width: `${widthPercent}%`,
+                            background: `linear-gradient(to right, ${gradientStops})`,
+                          }}
+                        />
 
-                    {/* Badge */}
-                    <div
-                      className="absolute top-1/2 z-10 -translate-y-1/2"
-                      style={{
-                        left: `${widthPercent}%`,
-                        transform: "translate(-8%, -50%)",
-                      }}
-                    >
-                      <div
-                        className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-white shadow"
-                        style={{
-                          backgroundColor: assetColor,
-                        }}
-                      >
-                        <span>{asset.symbol}</span>
-                        <span>{asset.risk}%</span>
+                        {/* Overlay */}
+                        <div
+                          className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full opacity-70"
+                          style={{
+                            width: `${widthPercent}%`,
+                            backgroundColor: assetColor,
+                          }}
+                        />
+
+                        {/* Annualized / quarterly PD at bar end */}
+                        <div
+                          className="absolute top-1/2 z-10 flex -translate-y-1/2 flex-col pl-2 leading-tight whitespace-nowrap"
+                          style={{
+                            left: `${widthPercent}%`,
+                          }}
+                        >
+                          <span className="text-klerosUIComponentsPrimaryText text-xs font-semibold">
+                            PD (Ann.): {asset.risk}%
+                          </span>
+                          {asset.quarterlyRisk !== undefined && (
+                            <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                              PD (Quart.): {asset.quarterlyRisk}%
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+            </div>
           </div>
 
-          {/* Zones */}
-          <div className="relative mt-14">
+          {/* Zones: always visible below the scroll area. Same left/right
+              gutters as the scroll region so the axis stays aligned. */}
+          <div className="relative mt-10 mr-2 ml-32">
             <div className="overflow-visible rounded-xl">
               <div className="flex h-24 overflow-visible">
                 {zones.map((zone) => {

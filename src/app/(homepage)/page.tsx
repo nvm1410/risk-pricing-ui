@@ -11,6 +11,7 @@ import { useRiskPredictionStore } from "@/store/riskMarketStore";
 
 import { TradeWalletProvider } from "@/context/TradeWalletContext";
 import { isTwoStringsEqual } from "@/hooks/liquidity/utils";
+import { yearlyToQuarterly } from "@/hooks/useImpliedProbs";
 import { useMarketData } from "@/hooks/useMarketData";
 
 import FirstVisitGuide from "@/components/Guides/FirstVisit";
@@ -23,6 +24,7 @@ import Header from "./components/Header";
 import ParticipateSection from "./components/ParticipateSection";
 import ExportPredictions from "./components/ParticipateSection/CsvUpload/ExportPredictions";
 import PredictAll from "./components/PredictAll";
+import QuarterTabs from "./components/QuarterTabs";
 import RiskPricing from "./components/RiskPricing";
 import MarketEstimateRisk from "./components/RiskPricing/MarketEstimateRisk";
 
@@ -61,6 +63,7 @@ export default function Home() {
     <div className="w-full px-4 py-12 md:px-8 lg:px-32">
       <div className="mx-auto max-w-294 space-y-6">
         <Header />
+        <QuarterTabs />
         <div className="min-h-106 space-y-6">
           {!isLoading ? (
             <>
@@ -70,6 +73,11 @@ export default function Home() {
                     return {
                       symbol: outcome.outcome,
                       risk: Number((outcome.probability * 100).toFixed(3)),
+                      quarterlyRisk: Number(
+                        (yearlyToQuarterly(outcome.probability) * 100).toFixed(
+                          3,
+                        ),
+                      ),
                     };
                   })}
                   noToAllProbability={

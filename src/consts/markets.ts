@@ -38,7 +38,7 @@ export const invalidMarket: Address =
 
 // in unix timestamp, seconds
 export const startTime: number = 1771871400;
-export const endTime: number = 1798761600; //Fri Jan 01 2027 00:00:00 GMT
+export const endTime: number = 1790812799; //Wed Sep 30 2026 23:59:59 UTC (end of Q3 2026)
 export const endDate: string = "Friday 3rd April 18:00 UTC";
 export interface IDetails {
   imdbURL?: string;
@@ -81,7 +81,7 @@ export interface RiskProfile {
 export const marketMetadata = {
   name: "Risk Pricing Predictions",
   question:
-    "What is the Probability of Default (PD) for the following DeFi assets before 2027?",
+    "What is the Probability of Default (PD) for the following DeFi assets before end of Q3 2026?",
 };
 
 export const RISK_PRICING_MARKET_ID =

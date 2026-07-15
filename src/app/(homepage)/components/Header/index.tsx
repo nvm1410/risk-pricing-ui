@@ -69,6 +69,7 @@ const Header: React.FC = () => {
               weekday: "long",
               day: "numeric",
               month: "long",
+              year: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             }) + " UTC"}
@@ -104,7 +105,7 @@ const Header: React.FC = () => {
               </span>
               <HelpIcon className="ml-1 inline-block size-3.5" />
             </Tooltip>{" "}
-            for the following DeFi assets before 2027?
+            for the following DeFi assets before end of Q3 2026?
           </p>
         </div>
         <p className="text-klerosUIComponentsSecondaryText px-6 pb-3.75 text-xs whitespace-pre-line">
