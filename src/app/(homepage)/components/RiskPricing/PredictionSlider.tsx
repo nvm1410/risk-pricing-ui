@@ -16,10 +16,11 @@ import { useRiskPredictionStore } from "@/store/riskMarketStore";
 import { RiskPricingOutcome } from "@/hooks/useMarketData";
 
 import { Skeleton } from "@/components/Skeleton";
+import WithHelpTooltip from "@/components/WithHelpTooltip";
 
 import { getReadableTextColor } from "@/utils/getReadableTextColor";
 
-import { zoneAxis, zones } from "./constants";
+import { MARKET_PD_TOOLTIP, zoneAxis, zones } from "./constants";
 import { interpolateColor } from "./utils";
 
 const LoadingSkeleton: React.FC = () => (
@@ -210,61 +211,92 @@ const PredictionSlider = ({
   if (!mounted) return <LoadingSkeleton />;
 
   return (
-    <div className="relative w-full">
-      {/* Market-probability marker (does not move while dragging) */}
-      <div
-        className="pointer-events-none absolute top-[-40px] z-20"
-        style={{
-          left: `${scale(marketPercent)}%`,
-          transform: "translateX(-50%)",
-        }}
-      >
-        <label className="text-klerosUIComponentsPrimaryText block w-full text-center text-xs">
-          Market
-        </label>
-
+    // The inset lives on this OUTER wrapper, never on the relative container
+    // below: `left: %` on the marker resolves against the padding box, so
+    // padding the positioning context itself would shift and rescale the
+    // marker away from the track. Insetting here keeps the marker exactly on
+    // its value while giving the centred "Market PD (Ann.)" label room to stay
+    // inside the accordion body, which is overflow-hidden for its animation.
+    <div className="w-full px-10">
+      <div className="relative w-full">
+        {/* Market-probability marker (does not move while dragging) */}
+        {/* Raised 28px above the original -40px: the pill used to sit at
+            -24..-2, right on top of the Slider's own bold value label at
+            -23..-3, hiding it whenever the prediction is near the market.
+            The stem grows by the same 28px so it still lands on the track. */}
         <div
-          className={clsx("rounded-base px-2 py-0.75 text-center text-xs")}
+          className="pointer-events-none absolute top-[-68px] z-20"
           style={{
-            backgroundColor: isNoToAll ? "#7bcbff" : color,
-            color: getReadableTextColor(isNoToAll ? "#7bcbff" : color),
+            left: `${scale(marketPercent)}%`,
+            transform: "translateX(-50%)",
           }}
         >
-          {`${marketPercent.toFixed(3)}%`}
+          {/* pointer-events-auto: the marker wrapper disables pointer events so
+            it never blocks the slider, but the tooltip still needs hover. */}
+          <div className="pointer-events-auto flex items-center justify-center whitespace-nowrap">
+            <label className="text-klerosUIComponentsPrimaryText text-xs">
+              Market PD (Ann.)
+            </label>
+            <WithHelpTooltip tooltipMsg={MARKET_PD_TOOLTIP} place="top" />
+          </div>
+
+          <div
+            className={clsx("rounded-base px-2 py-0.75 text-center text-xs")}
+            style={{
+              backgroundColor: isNoToAll ? "#7bcbff" : color,
+              color: getReadableTextColor(isNoToAll ? "#7bcbff" : color),
+            }}
+          >
+            {`${marketPercent.toFixed(3)}%`}
+          </div>
+
+          {/* One unbroken line from the pill down over the track and thumb.
+              Where it meets the Slider's bold value label, that label masks it
+              with the card background — see the #slider-label rules below. */}
+          <span className="bg-klerosUIComponentsPrimaryText absolute top-full left-1/2 h-16 w-0.75 -translate-x-1/2 rounded-b-full" />
         </div>
 
-        <span className="bg-klerosUIComponentsPrimaryText mx-auto block h-9 w-0.75 rounded-b-full" />
+        {/* Slider */}
+        <Slider
+          className={clsx(
+            "w-full",
+            "[&_#slider-label]:!text-klerosUIComponentsPrimaryText",
+            "[&_#slider-label]:font-semibold",
+
+            // The market marker's stem passes behind this label. Give the
+            // label the card's own background so it masks the line rather than
+            // being struck through by it. The z-index has to go on the thumb
+            // wrapper (the label's direct parent), not the label: the wrapper
+            // is a stacking context, so a z-index on the label alone can never
+            // rise above the z-20 marker outside it.
+            "[&_div:has(>#slider-label)]:z-30",
+            "[&_#slider-label]:bg-klerosUIComponentsLightBackground",
+            "[&_#slider-label]:rounded-base",
+            "[&_#slider-label]:px-1",
+
+            // Thumb
+            "[&_[role=slider]]:border-4",
+            "[&_[role=slider]]:border-white",
+            "[&_[role=slider]]:bg-white",
+            "[&_[role=slider]]:shadow-md",
+          )}
+          step={0.0001}
+          maxValue={maxValue}
+          minValue={0}
+          value={scale(displayValue)}
+          leftLabel=""
+          rightLabel=""
+          aria-label="Slider"
+          callback={handleChange}
+          onChangeEnd={handleChangeEnd}
+          formatter={formatted}
+          // @ts-expect-error other values not needed
+          theme={theme}
+        />
+
+        {!isNoToAll && <ZoneBar />}
+        {!isNoToAll && <Axis />}
       </div>
-
-      {/* Slider */}
-      <Slider
-        className={clsx(
-          "w-full",
-          "[&_#slider-label]:!text-klerosUIComponentsPrimaryText",
-          "[&_#slider-label]:font-semibold",
-
-          // Thumb
-          "[&_[role=slider]]:border-4",
-          "[&_[role=slider]]:border-white",
-          "[&_[role=slider]]:bg-white",
-          "[&_[role=slider]]:shadow-md",
-        )}
-        step={0.0001}
-        maxValue={maxValue}
-        minValue={0}
-        value={scale(displayValue)}
-        leftLabel=""
-        rightLabel=""
-        aria-label="Slider"
-        callback={handleChange}
-        onChangeEnd={handleChangeEnd}
-        formatter={formatted}
-        // @ts-expect-error other values not needed
-        theme={theme}
-      />
-
-      {!isNoToAll && <ZoneBar />}
-      {!isNoToAll && <Axis />}
     </div>
   );
 };

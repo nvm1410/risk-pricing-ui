@@ -54,6 +54,9 @@ export const zones: Zone[] = [
 export const zoneAxis = zones
   .map((x) => x.from)
   .concat([zones.at(-1)?.to ?? 100]);
+
+export const MARKET_PD_TOOLTIP =
+  "The market's current consensus on the annualized probability this asset defaults, implied by current trading prices.";
 export const BLOCK_EXPLORER_URLS: Partial<Record<number, string>> = {
   [gnosis.id]: "https://gnosisscan.io",
   [mainnet.id]: "https://etherscan.io",

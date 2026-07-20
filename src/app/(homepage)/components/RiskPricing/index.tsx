@@ -124,7 +124,10 @@ const RiskPricing = ({
           ),
           body: (
             <div className="flex w-full flex-col">
-              <div className="pt-8 pb-4">
+              {/* pt-12 (not pt-8): the market marker is absolutely positioned
+                  above the track, and the accordion body is overflow-hidden,
+                  so it needs the headroom or its label is clipped. */}
+              <div className="pt-12 pb-4">
                 <PredictionSlider outcome={outcome} isNoToAll={isNoToAll} />
               </div>
               {tradeExecutor ? (
