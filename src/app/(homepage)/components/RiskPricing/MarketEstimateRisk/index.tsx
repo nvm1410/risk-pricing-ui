@@ -1,36 +1,26 @@
-import { useState } from "react";
+import { zoneAxis, zones } from "../constants";
 
-import { assetColors, zoneAxis, zones } from "../constants";
-
-type AssetRisk = {
+export type AssetRisk = {
   symbol: string;
   risk: number;
   quarterlyRisk?: number;
 };
 
 type MarketEstimateRiskProps = {
+  /** Already filtered to the visible set by the parent. */
   assets: AssetRisk[];
+  /** Symbol -> colour, keyed on the full asset list so colours never shift. */
+  colorOf: Map<string, string>;
   maxRisk?: number;
   noToAllProbability?: number;
 };
 
 export default function MarketEstimateRisk({
   assets,
+  colorOf,
   maxRisk = 100,
   noToAllProbability,
 }: MarketEstimateRiskProps) {
-  const [visibleAssets, setVisibleAssets] = useState<string[]>(
-    assets.map((a) => a.symbol),
-  );
-
-  const toggleAsset = (symbol: string) => {
-    setVisibleAssets((prev) =>
-      prev.includes(symbol)
-        ? prev.filter((s) => s !== symbol)
-        : [...prev, symbol],
-    );
-  };
-
   /**
    * Log scale mapping
    * Keeps low-end ranges visually meaningful
@@ -48,52 +38,8 @@ export default function MarketEstimateRisk({
 
   return (
     <>
-      {/* Pills */}
-      <div className="flex flex-wrap gap-2">
-        {assets.map((asset, index) => {
-          const assetColor = assetColors[index % assetColors.length];
-          const active = visibleAssets.includes(asset.symbol);
-
-          return (
-            <button
-              key={asset.symbol}
-              onClick={() => toggleAsset(asset.symbol)}
-              className={`cursor-pointer rounded-full border px-2 py-1 text-xs font-medium transition hover:bg-neutral-100 dark:hover:bg-neutral-800 ${
-                active
-                  ? "border-transparent text-white"
-                  : "border-neutral-300 bg-white text-neutral-500 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-400"
-              }`}
-              style={
-                active
-                  ? {
-                      backgroundColor: assetColor,
-                    }
-                  : undefined
-              }
-            >
-              {asset.symbol}
-            </button>
-          );
-        })}
-
-        <button
-          onClick={() =>
-            setVisibleAssets(
-              visibleAssets.length === 0 ? assets.map((a) => a.symbol) : [],
-            )
-          }
-          className="cursor-pointer rounded-full border border-neutral-300 bg-white px-2 py-1 text-xs font-medium text-neutral-500 transition hover:bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800"
-        >
-          {visibleAssets.length === 0 ? "Select all" : "Clear all"}
-        </button>
-      </div>
-
       {/* Chart */}
       <div className="w-full">
-        <h2 className="text-klerosUIComponentsPrimaryText mb-8 text-2xl font-semibold">
-          Market Estimate Risk
-        </h2>
-
         <div>
           {/* Assets viewport: scrolls vertically so the zone axis below stays
               in view even with many (25+) assets. */}
@@ -119,89 +65,86 @@ export default function MarketEstimateRisk({
             {/* Assets (scrollable; a stable gutter keeps the plot width
                 constant whether or not the scrollbar is visible) */}
             <div className="max-h-[28rem] space-y-8 overflow-y-auto [scrollbar-gutter:stable] [scrollbar-width:thin] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-neutral-300 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-600 [&::-webkit-scrollbar-track]:bg-transparent">
-              {assets
-                .filter((asset) => visibleAssets.includes(asset.symbol))
-                .map((asset, index) => {
-                  const assetColor = assetColors[index % assetColors.length];
+              {assets.map((asset) => {
+                const assetColor = colorOf.get(asset.symbol);
 
-                  /**
-                   * Track width uses LOG SCALE
-                   */
-                  const widthPercent = scaledPercent(asset.risk);
+                /**
+                 * Track width uses LOG SCALE
+                 */
+                const widthPercent = scaledPercent(asset.risk);
 
-                  /**
-                   * Gradient stops relative to the asset width
-                   */
-                  const gradientStops = zones
-                    .flatMap((zone) => {
-                      if (zone.from >= asset.risk) return [];
+                /**
+                 * Gradient stops relative to the asset width
+                 */
+                const gradientStops = zones
+                  .flatMap((zone) => {
+                    if (zone.from >= asset.risk) return [];
 
-                      const clampedTo = Math.min(zone.to, asset.risk);
+                    const clampedTo = Math.min(zone.to, asset.risk);
 
-                      /**
-                       * IMPORTANT:
-                       * Normalize against asset risk,
-                       * not global maxRisk
-                       */
-                      const start =
-                        (scale(zone.from) / scale(asset.risk)) * 100;
+                    /**
+                     * IMPORTANT:
+                     * Normalize against asset risk,
+                     * not global maxRisk
+                     */
+                    const start = (scale(zone.from) / scale(asset.risk)) * 100;
 
-                      const end = (scale(clampedTo) / scale(asset.risk)) * 100;
+                    const end = (scale(clampedTo) / scale(asset.risk)) * 100;
 
-                      const [from, to] = zone.colors;
+                    const [from, to] = zone.colors;
 
-                      return [`${from} ${start}%`, `${to} ${end}%`];
-                    })
-                    .join(", ");
+                    return [`${from} ${start}%`, `${to} ${end}%`];
+                  })
+                  .join(", ");
 
-                  return (
-                    <div key={asset.symbol} className="flex h-8 items-center">
-                      {/* Asset name label (left of the chart) */}
-                      <div className="w-32 shrink-0 truncate pr-3 text-base font-semibold text-black dark:text-white">
-                        {asset.symbol}
-                      </div>
+                return (
+                  <div key={asset.symbol} className="flex h-8 items-center">
+                    {/* Asset name label (left of the chart) */}
+                    <div className="w-32 shrink-0 truncate pr-3 text-base font-semibold text-black dark:text-white">
+                      {asset.symbol}
+                    </div>
 
-                      {/* Plotting area (shares its 0-100% scale with the grid
+                    {/* Plotting area (shares its 0-100% scale with the grid
                         lines and zone legend) */}
-                      <div className="relative h-8 flex-1">
-                        {/* Gradient track */}
-                        <div
-                          className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full"
-                          style={{
-                            width: `${widthPercent}%`,
-                            background: `linear-gradient(to right, ${gradientStops})`,
-                          }}
-                        />
+                    <div className="relative h-8 flex-1">
+                      {/* Gradient track */}
+                      <div
+                        className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full"
+                        style={{
+                          width: `${widthPercent}%`,
+                          background: `linear-gradient(to right, ${gradientStops})`,
+                        }}
+                      />
 
-                        {/* Overlay */}
-                        <div
-                          className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full opacity-70"
-                          style={{
-                            width: `${widthPercent}%`,
-                            backgroundColor: assetColor,
-                          }}
-                        />
+                      {/* Overlay */}
+                      <div
+                        className="absolute top-1/2 h-3 -translate-y-1/2 rounded-full opacity-70"
+                        style={{
+                          width: `${widthPercent}%`,
+                          backgroundColor: assetColor,
+                        }}
+                      />
 
-                        {/* Annualized / quarterly PD at bar end */}
-                        <div
-                          className="absolute top-1/2 z-10 flex -translate-y-1/2 flex-col pl-2 leading-tight whitespace-nowrap"
-                          style={{
-                            left: `${widthPercent}%`,
-                          }}
-                        >
-                          <span className="text-klerosUIComponentsPrimaryText text-xs font-semibold">
-                            PD (Ann.): {asset.risk}%
+                      {/* Annualized / quarterly PD at bar end */}
+                      <div
+                        className="absolute top-1/2 z-10 flex -translate-y-1/2 flex-col pl-2 leading-tight whitespace-nowrap"
+                        style={{
+                          left: `${widthPercent}%`,
+                        }}
+                      >
+                        <span className="text-klerosUIComponentsPrimaryText text-xs font-semibold">
+                          PD (Ann.): {asset.risk}%
+                        </span>
+                        {asset.quarterlyRisk !== undefined && (
+                          <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                            PD (Quart.): {asset.quarterlyRisk}%
                           </span>
-                          {asset.quarterlyRisk !== undefined && (
-                            <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
-                              PD (Quart.): {asset.quarterlyRisk}%
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

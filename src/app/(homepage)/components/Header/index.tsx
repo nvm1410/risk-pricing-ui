@@ -29,6 +29,12 @@ const defaultDefinition = (
     1% below issuance value for 7+ days
     <br />• <span className="font-bold">Other structural failures</span>{" "}
     relevant to token mechanics (wrapped assets, LSTs, fiat-backed stablecoins)
+    <br />
+    <br />
+    <span className="font-bold">
+      Only defaults occurring during Q3 2026 count.
+    </span>{" "}
+    Defaults caused by events prior to Q3 do not count.
   </>
 ) as unknown as string;
 
@@ -93,7 +99,7 @@ const Header: React.FC = () => {
         <div className="flex size-full flex-wrap items-center gap-6 px-6 pt-3.75">
           <SeerLogo />
           <p className="text-klerosUIComponentsPrimaryText text-base">
-            What is the Probability of{" "}
+            What is the yearly Probability of{" "}
             <Tooltip
               text={defaultDefinition}
               place="bottom"
@@ -105,7 +111,7 @@ const Header: React.FC = () => {
               </span>
               <HelpIcon className="ml-1 inline-block size-3.5" />
             </Tooltip>{" "}
-            for the following DeFi assets before end of Q3 2026?
+            for the following DeFi assets during Q3 2026?
           </p>
         </div>
         <p className="text-klerosUIComponentsSecondaryText px-6 pb-3.75 text-xs whitespace-pre-line">

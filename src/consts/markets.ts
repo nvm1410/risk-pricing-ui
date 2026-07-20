@@ -81,7 +81,7 @@ export interface RiskProfile {
 export const marketMetadata = {
   name: "Risk Pricing Predictions",
   question:
-    "What is the Probability of Default (PD) for the following DeFi assets before end of Q3 2026?",
+    "What is the yearly Probability of Default (PD) for the following DeFi assets during Q3 2026?",
 };
 
 export const RISK_PRICING_MARKET_ID =

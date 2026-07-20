@@ -21,12 +21,12 @@ import { isUndefined } from "@/utils";
 
 import AdvancedSection from "./components/AdvancedSection";
 import Header from "./components/Header";
+import MarketEstimate from "./components/MarketEstimate";
 import ParticipateSection from "./components/ParticipateSection";
 import ExportPredictions from "./components/ParticipateSection/CsvUpload/ExportPredictions";
 import PredictAll from "./components/PredictAll";
 import QuarterTabs from "./components/QuarterTabs";
 import RiskPricing from "./components/RiskPricing";
-import MarketEstimateRisk from "./components/RiskPricing/MarketEstimateRisk";
 
 export default function Home() {
   const { data, isLoading } = useMarketData();
@@ -68,7 +68,7 @@ export default function Home() {
           {!isLoading ? (
             <>
               {data?.outcomes ? (
-                <MarketEstimateRisk
+                <MarketEstimate
                   assets={data.outcomes.slice(0, -2).map((outcome) => {
                     return {
                       symbol: outcome.outcome,

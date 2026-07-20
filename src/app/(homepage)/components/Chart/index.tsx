@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 
 import { useTheme } from "next-themes";
 
@@ -9,51 +9,22 @@ import {
   type ISeriesApi,
   LineSeries,
   LineStyle,
-  UTCTimestamp,
+  PriceScaleMode,
 } from "lightweight-charts";
 
-import { type IChartData } from "@/hooks/useChartData";
+import { type PdSeries } from "@/hooks/useRiskPdHistory";
 
 import { shortenName } from "@/utils";
 
-import { IMarket, startTime, endTime } from "@/consts/markets";
+interface IChart {
+  /** Already filtered to the visible set by the parent. */
+  series: PdSeries[];
+  /** Symbol hovered in the shared legend, highlighted here. */
+  hoveredSymbol?: string | null;
+}
 
-import Legend from "./Legend";
-
-export type MarketsData = Record<
-  string,
-  {
-    market: IMarket;
-    data: Array<{ timestamp: number; value: number }>;
-  }
->;
-
-const Chart: React.FC<{ data: IChartData[] }> = ({ data }) => {
+const Chart: React.FC<IChart> = ({ series, hoveredSymbol = null }) => {
   const { theme } = useTheme();
-  const marketNames = useMemo(() => {
-    // Extract all market names from the data
-    return data.flatMap((marketData) => Object.keys(marketData));
-  }, [data]);
-
-  const [visibleMarkets, setVisibleMarkets] = useState<Set<string>>(
-    new Set(marketNames),
-  );
-
-  React.useEffect(() => {
-    setVisibleMarkets(new Set(marketNames));
-  }, [marketNames]);
-
-  const handleToggleMarket = (marketName: string) => {
-    setVisibleMarkets((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(marketName)) {
-        newSet.delete(marketName);
-      } else {
-        newSet.add(marketName);
-      }
-      return newSet;
-    });
-  };
 
   const accentColor = useMemo(() => {
     if (theme === "light") return "#999";
@@ -70,15 +41,15 @@ const Chart: React.FC<{ data: IChartData[] }> = ({ data }) => {
   const seriesColorsRef = useRef<Record<string, string>>({});
   const seriesOrderRef = useRef<Record<string, number>>({});
 
-  const handleHoverMarket = React.useCallback(
-    (marketName: string | null) => {
+  const applyHighlight = React.useCallback(
+    (symbol: string | null) => {
       const map = seriesRefMap.current;
       const colors = seriesColorsRef.current;
       const orders = seriesOrderRef.current;
       const strokeColor = gridLinesColor;
-      const isResetting = marketName === null;
+      const isResetting = symbol === null;
       Object.entries(map).forEach(([name, s]) => {
-        const isHovered = name === marketName;
+        const isHovered = name === symbol;
         s.applyOptions({
           lineWidth: isHovered ? 4 : 2,
           color:
@@ -91,79 +62,17 @@ const Chart: React.FC<{ data: IChartData[] }> = ({ data }) => {
     [gridLinesColor],
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [series, marketsData] = useMemo(() => {
-    if (!data.length) return [[], {}];
-    // Combine all market data
-    const marketsData: MarketsData = {};
-    data.forEach((marketData) => {
-      Object.entries(marketData).forEach(([marketName, marketInfo]) => {
-        marketsData[marketName] = marketInfo;
-      });
-    });
+  // Hover lives in the shared legend, so the highlight is driven by prop.
+  // Mirrored into a ref as well: the chart is torn down and rebuilt whenever the
+  // visible set changes, and effects run in definition order, so this one would
+  // otherwise fire against cleared refs and lose a held highlight. The rebuild
+  // effect re-applies from the ref once the new series exist.
+  const hoveredRef = useRef<string | null>(hoveredSymbol);
+  hoveredRef.current = hoveredSymbol;
 
-    // Find the latest timestamp across all markets
-    const latestTimestamp = Math.min(Date.now() / 1000, endTime);
-
-    // Generate common timestamps for all markets
-    // DEV: chart start time
-    const timestamps = getTimestamps(startTime, latestTimestamp);
-
-    const seriesData: Record<
-      string,
-      { info: IMarket; data: Array<{ time: UTCTimestamp; value: number }> }
-    > = {};
-
-    Object.entries(marketsData).forEach(([marketName, marketInfo]) => {
-      seriesData[marketName] = { info: marketInfo.market, data: [] };
-    });
-
-    // Process data for each market
-    timestamps.forEach((timestamp) => {
-      Object.entries(marketsData).forEach(([marketName, marketInfo]) => {
-        const { data, market } = marketInfo;
-
-        const maxValue = market.maxValue;
-
-        // Find valid start index (skip extreme values)
-        let validStartIndex = 0;
-        for (let i = 0; i < data.length; i++) {
-          const isExtreme = data[i].value === maxValue || data[i].value < 0.1;
-          if (!isExtreme && i > 0) {
-            validStartIndex = i;
-            break;
-          }
-        }
-
-        const normalizedData = data.slice(validStartIndex);
-
-        if (normalizedData.length === 0) {
-          seriesData[marketName].data.push({
-            time: timestamp as UTCTimestamp,
-            value: 0,
-          });
-          return;
-        }
-
-        // Find the closest data point for this timestamp
-        let closestDataPoint = normalizedData[0];
-        for (const point of normalizedData) {
-          if (point.timestamp <= timestamp) {
-            closestDataPoint = point;
-          } else {
-            break;
-          }
-        }
-
-        seriesData[marketName].data.push({
-          time: timestamp as UTCTimestamp,
-          value: closestDataPoint.value,
-        });
-      });
-    });
-
-    return [seriesData, marketsData];
-  }, [data]);
+  useEffect(() => {
+    applyHighlight(hoveredSymbol);
+  }, [hoveredSymbol, applyHighlight]);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -186,6 +95,9 @@ const Chart: React.FC<{ data: IChartData[] }> = ({ data }) => {
         borderVisible: false,
         visible: true,
         ensureEdgeTickMarksVisible: true,
+        // PD spans orders of magnitude across assets (0.05% to 30%+), same
+        // reason the bar chart plots on a log scale.
+        mode: PriceScaleMode.Logarithmic,
       },
       localization: {
         priceFormatter: (val: number) => `${val.toFixed(2)}%`,
@@ -210,27 +122,29 @@ const Chart: React.FC<{ data: IChartData[] }> = ({ data }) => {
         },
       },
     });
-    chart.timeScale().fitContent();
 
     seriesRefMap.current = {};
     seriesColorsRef.current = {};
     seriesOrderRef.current = {};
     let orderIndex = 0;
-    Object.entries(series).forEach(([marketName, marketData]) => {
-      if (visibleMarkets.has(marketData.info.name)) {
-        const lineSeries = chart.addSeries(LineSeries, {
-          color: marketData.info.color,
-          lineWidth: 2,
-          title: shortenName(marketName),
-        });
-        lineSeries.setData(
-          marketData.data as Array<{ time: UTCTimestamp; value: number }>,
-        );
-        seriesRefMap.current[marketName] = lineSeries;
-        seriesColorsRef.current[marketName] = marketData.info.color;
-        seriesOrderRef.current[marketName] = orderIndex++;
-      }
+    series.forEach((s) => {
+      if (s.data.length === 0) return;
+      const lineSeries = chart.addSeries(LineSeries, {
+        color: s.color,
+        lineWidth: 2,
+        title: shortenName(s.symbol),
+      });
+      lineSeries.setData(s.data);
+      seriesRefMap.current[s.symbol] = lineSeries;
+      seriesColorsRef.current[s.symbol] = s.color;
+      seriesOrderRef.current[s.symbol] = orderIndex++;
     });
+
+    // Must run after the series are added - fitting an empty chart is a no-op.
+    chart.timeScale().fitContent();
+
+    // Restore a highlight held across the rebuild.
+    applyHighlight(hoveredRef.current);
 
     window.addEventListener("resize", handleResize);
 
@@ -241,36 +155,13 @@ const Chart: React.FC<{ data: IChartData[] }> = ({ data }) => {
       seriesOrderRef.current = {};
       chart.remove();
     };
-  }, [series, accentColor, visibleMarkets, gridLinesColor]);
+  }, [series, accentColor, gridLinesColor, applyHighlight]);
 
   return (
-    <div className="mt-6 flex size-full flex-col">
-      <Legend
-        marketsData={marketsData}
-        visibleMarkets={visibleMarkets}
-        onToggleMarket={handleToggleMarket}
-        onHoverMarket={handleHoverMarket}
-      />
-      <h2 className="text-klerosUIComponentsPrimaryText mt-6 mb-4 text-base font-semibold">
-        Market Estimate Scores
-      </h2>
+    <div className="flex size-full flex-col">
       <div ref={chartContainerRef} />
     </div>
   );
-};
-
-const getTimestamps = (firstTimestamp: number, lastTimestamp: number) => {
-  let currentTimestamp = firstTimestamp;
-  const timestamps: Array<number> = [];
-  while (currentTimestamp <= lastTimestamp) {
-    timestamps.push(currentTimestamp);
-    currentTimestamp += 60 * 60 * 4;
-  }
-  // if the startTime is in future
-  if (firstTimestamp < lastTimestamp) {
-    timestamps.push(lastTimestamp);
-  }
-  return timestamps;
 };
 
 export default Chart;
